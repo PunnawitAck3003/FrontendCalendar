@@ -1,3 +1,5 @@
+const backendIPAddress = "127.0.0.1:3000";
+
 const calendar = document.querySelector(".calendar");
 const date = document.querySelector(".date");
 const daysContainer = document.querySelector(".days");
@@ -20,6 +22,7 @@ let month = today.getMonth();
 let year = today.getFullYear();
 let eventsArr = [];
 let allCvId = [];
+let itemsData;
 
 // const eventsArr = [
 //     {
@@ -108,8 +111,6 @@ function initCalendar() {
     addListner();
 }
 
-const backendIPAddress = "127.0.0.1:3000";
-
 const authorizeApplication = () => {
   window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
 };
@@ -118,7 +119,6 @@ const getGroupNumber = () => {
   return 8;
 };
 
-// Example: Send Get user profile ("GET") request to backend server and show the response on the webpage
 const getUserProfile = async () => {
   const options = {
     method: "GET",
@@ -408,6 +408,7 @@ addEventSubmit.addEventListener("click", () => {
 
     addEventTitle.value = "";
     updateEvents(activeDay);
+    addItem(eventTitle);
 
     const activeDayElem = document.querySelector(".day.active");
     if (!activeDayElem.classList.contains("event")) {
@@ -447,7 +448,117 @@ eventsContainer.addEventListener("click", (e) => {
     }
   });
 
+// Data-Base Section
+const getItemsFromDB = async () => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(`http://${backendIPAddress}/items`, options)
+      .then((response) => response.json())
+      .then((data) => {
+        itemsData = data;
+        for(let i = 0; i < itemsData.length; ++i){
+            addItemToCal(itemsData[i])
+        }
+      })
+      .catch((error) => console.error(error));
+};
+
+const addItem = async (title) => {
+
+    const itemToAdd = {
+                day: activeDay,
+                month: month,
+                year: year,
+                events: title
+            }
+    
+    const options = {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(itemToAdd)
+    };
+    
+    await fetch(`http://${backendIPAddress}/items`, options)
+      .then((response)=>{
+  
+      })
+      .catch((error)=>console.error(error));
+  
+    //await getItemsFromDB();
+    //showItemsInTable(itemsData);
+  
+};
+
+const deleteItem = async (id) => {
+    const options = {
+      method: "DELETE",
+      credentials: "include"
+    };
+    await fetch(`http://${backendIPAddress}/items/${id}`, options)
+      .then((response)=>{
+        console.log(response);
+      })
+      .catch((error)=>console.error(error));
+
+    //await getItemsFromDB();
+};
+  
+function addItemToCal(data){
+    const eventTitle = data.events;
+    if (eventTitle === "") {
+        return;
+    }
+
+    const newEvent = {
+        title: eventTitle
+    };
+
+    let day = data.day;
+    let month = data.month;
+    let year = data.year;
+    
+    console.log(day, month, year);
+    
+    let eventAdded = false;
+
+    if (eventsArr.length > 0) {
+        eventsArr.forEach((item) => {
+            if (item.day === day && item.month === month + 1 && item.year === year) {
+                item.events.push(newEvent);
+                eventAdded = true;
+            }
+        });
+    }
+
+    if (!eventAdded) {
+        eventsArr.push({
+            day: day,
+            month: month + 1,
+            year: year,
+            events: [newEvent],
+        });
+    }
+
+    console.log(eventsArr);
+    addEventWrapper.classList.remove("active");
+
+    addEventTitle.value = "";
+    updateEvents(activeDay);
+
+    const activeDayElem = document.querySelector(".day.active");
+    if (!activeDayElem.classList.contains("event")) {
+        activeDayElem.classList.add("event");
+    }
+}
+
+
 getUserProfile();
 initCalendar();
+getItemsFromDB();
 
 //getActiveDay(today.innerHTML);
