@@ -19,6 +19,7 @@ let activeDay;
 let month = today.getMonth();
 let year = today.getFullYear();
 let eventsArr = [];
+let allCvId = [];
 
 // const eventsArr = [
 //     {
@@ -55,6 +56,7 @@ const months = [
 //const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function initCalendar() {
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const prevLastDay = new Date(year, month, 0);
@@ -106,6 +108,145 @@ function initCalendar() {
     addListner();
 }
 
+const backendIPAddress = "127.0.0.1:3000";
+
+const authorizeApplication = () => {
+  window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
+};
+
+const getGroupNumber = () => {
+  return 8;
+};
+
+// Example: Send Get user profile ("GET") request to backend server and show the response on the webpage
+const getUserProfile = async () => {
+  const options = {
+    method: "GET",
+    credentials: "include",
+  };
+  await fetch(
+    `http://${backendIPAddress}/courseville/get_profile_info`,
+    options
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      data = data.data.student;
+      for(let i = 0; i < data.length; ++i){
+        allCvId.push(data[i].cv_cid);
+      }
+      for(let i = 0; i < allCvId.length; ++i){
+        getAllAssignment(allCvId[i]);
+    }
+    })
+    .catch((error) => console.error(error));
+};
+
+const getCourse = async () => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville/get_courses`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
+};
+
+const getAllAssignment = async (cv_cid) => {
+    //const cv_cid = "32201"//document.getElementById("ces-cid-value").innerHTML;
+    const options = {
+        method: "GET",
+        credentials: "include",
+      };
+      await fetch(
+        `http://${backendIPAddress}/courseville/get_course_assignments/${cv_cid}`,
+        options
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          Alldata = data.data;
+          console.log(Alldata);
+          for(let i = 0; i < Alldata.length; ++i){
+            getAssignmentInfo(Alldata[i]);
+          }
+          
+        })
+        .catch((error) => console.error(error));
+};
+
+const getAssignmentInfo = async (assignmentsData) => {
+    let itemid = assignmentsData.itemid;
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville//get_assignment_detail/${itemid}`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        addAssignmentToCal(data.data);
+      })
+      .catch((error) => console.error(error));
+};
+
+function addAssignmentToCal(assignmentData){
+    const eventTitle = assignmentData.title;
+    if (eventTitle === "") {
+        return;
+    }
+
+    const newEvent = {
+        title: eventTitle
+    };
+
+    dueDate = assignmentData.duedate;
+    dueDate = dueDate.split('-');
+    let day = Number(dueDate[2]);
+    let month = Number(dueDate[1]) - 1;
+    let year = Number(dueDate[0]);
+    
+    console.log(newEvent);
+    console.log(day, month, year);
+    
+    let eventAdded = false;
+
+    if (eventsArr.length > 0) {
+        eventsArr.forEach((item) => {
+            if (item.day === day && item.month === month + 1 && item.year === year) {
+                item.events.push(newEvent);
+                eventAdded = true;
+            }
+        });
+    }
+
+    if (!eventAdded) {
+        eventsArr.push({
+            day: day,
+            month: month + 1,
+            year: year,
+            events: [newEvent],
+        });
+    }
+
+    console.log(eventsArr);
+    addEventWrapper.classList.remove("active");
+
+    addEventTitle.value = "";
+    updateEvents(activeDay);
+
+    const activeDayElem = document.querySelector(".day.active");
+    if (!activeDayElem.classList.contains("event")) {
+        activeDayElem.classList.add("event");
+    }
+}
+
 function prevMonth() {
     month--;
     if (month < 0) {
@@ -123,7 +264,6 @@ function nextMonth() {
     }
     initCalendar();
 }
-
 
 addEventBtn.addEventListener("click", () => {
     addEventWrapper.classList.toggle("active");
@@ -150,11 +290,9 @@ function addListner() {
     const days = document.querySelectorAll(".day");
     days.forEach((day) => {
         day.addEventListener("click", (e) => {
+            activeDay = e.target.innerHTML;
             getActiveDay(e.target.innerHTML);
             updateEvents(e.target.innerHTML);
-            activeDay = Number(e.target.innerHTML);
-
-
 
             days.forEach((day) => {
                 day.classList.remove("active");
@@ -192,19 +330,20 @@ function addListner() {
 
 }
 
-
-
 function getActiveDay(date) {
     const day = new Date(year, month, date);
     const dayName = day.toString().split(" ")[0];
     eventDay.innerHTML = dayName;
     eventDate.innerHTML = date + " " + months[month] + " " + year;
+    
 }
 
 function updateEvents(date) {
     let events = "";
+    console.log(date, month, year);
+    console.log(eventsArr);
     eventsArr.forEach((event) => {
-        if (date === event.day && month + 1 === event.month && year === event.year) {
+        if (date == event.day && month + 1 == event.month && year == event.year) {
             event.events.forEach((event) => {
                 events += `
                 <div class="event">
@@ -276,5 +415,39 @@ addEventSubmit.addEventListener("click", () => {
     }
 });
 
+//function to delete event when clicked on event
+eventsContainer.addEventListener("click", (e) => {
+    if (e.target.classList.contains("event")) {
+      if (confirm("Are you sure you want to delete this event?")) {
+        const eventTitle = e.target.children[0].children[1].innerHTML;
+        eventsArr.forEach((event) => {
+          if (
+            event.day === activeDay &&
+            event.month === month + 1 &&
+            event.year === year
+          ) {
+            event.events.forEach((item, index) => {
+              if (item.title === eventTitle) {
+                event.events.splice(index, 1);
+              }
+            });
+            //if no events left in a day then remove that day from eventsArr
+            if (event.events.length === 0) {
+              eventsArr.splice(eventsArr.indexOf(event), 1);
+              //remove event class from day
+              const activeDayEl = document.querySelector(".day.active");
+              if (activeDayEl.classList.contains("event")) {
+                activeDayEl.classList.remove("event");
+              }
+            }
+          }
+        });
+        updateEvents(activeDay);
+      }
+    }
+  });
+
+getUserProfile();
 initCalendar();
+
 //getActiveDay(today.innerHTML);
