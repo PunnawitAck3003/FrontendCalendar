@@ -12,6 +12,7 @@ const addEventContainer = document.querySelector(".add-event-wrapper");
 const addEventCloseBtn = document.querySelector(".close");
 const addEventTitle = document.querySelector(".event-name");
 const addEventWrapper = document.querySelector(".add-event-wrapper ");
+const progressbar = document.querySelector('.progress');
 
 const eventDay = document.querySelector(".event-day");
 const eventDate = document.querySelector(".event-date");
@@ -22,7 +23,13 @@ let month = today.getMonth();
 let year = today.getFullYear();
 let eventsArr = [];
 let allCvId = [];
+let progress = 0;
+let allprogress = 0;
 let itemsData;
+let allDB_Id = [];
+
+let cvidToName = new Map();
+let cvidToImg = new Map();
 
 // const eventsArr = [
 //     {
@@ -99,7 +106,7 @@ function initCalendar() {
             if (event) {
                 days += `<div class="day event">${i}</div>`;
             } else {
-                days += `<div class="day ">${i}</div>`;
+                days += `<div class="day">${i}</div>`;
             }
         }
     }
@@ -132,11 +139,14 @@ const getUserProfile = async () => {
     .then((data) => {
       data = data.data.student;
       for(let i = 0; i < data.length; ++i){
+        //console.log(data[i])
         allCvId.push(data[i].cv_cid);
+        getCourseInfo(data[i].cv_cid);
       }
+
       for(let i = 0; i < allCvId.length; ++i){
         getAllAssignment(allCvId[i]);
-    }
+      }
     })
     .catch((error) => console.error(error));
 };
@@ -157,8 +167,24 @@ const getCourse = async () => {
       .catch((error) => console.error(error));
 };
 
+const getCourseInfo = async (cv_cid) => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(`http://${backendIPAddress}/courseville/get_course_info/${cv_cid}`, options)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("found", cv_cid, data.data.title);
+        cvidToName.set(cv_cid, data.data.title);
+        cvidToImg.set(cv_cid, data.data.course_icon);
+      })
+      .catch((error) => console.error(error));
+};
+
+
 const getAllAssignment = async (cv_cid) => {
-    //const cv_cid = "32201"//document.getElementById("ces-cid-value").innerHTML;
+
     const options = {
         method: "GET",
         credentials: "include",
@@ -170,40 +196,52 @@ const getAllAssignment = async (cv_cid) => {
         .then((response) => response.json())
         .then((data) => {
           Alldata = data.data;
-          console.log(Alldata);
+          //console.log(Alldata);
+          allprogress += Alldata.length;
           for(let i = 0; i < Alldata.length; ++i){
-            getAssignmentInfo(Alldata[i]);
+            getAssignmentInfo(Alldata[i], cv_cid);
           }
           
         })
         .catch((error) => console.error(error));
 };
 
-const getAssignmentInfo = async (assignmentsData) => {
+const getAssignmentInfo = async (assignmentsData, cv_cid) => {
     let itemid = assignmentsData.itemid;
     const options = {
       method: "GET",
       credentials: "include",
     };
     await fetch(
-      `http://${backendIPAddress}/courseville//get_assignment_detail/${itemid}`,
+      `http://${backendIPAddress}/courseville/get_assignment_detail/${itemid}`,
       options
     )
       .then((response) => response.json())
       .then((data) => {
-        addAssignmentToCal(data.data);
+        addAssignmentToCal(data.data, cv_cid);
+        progress++;
+
+        progressbar.style.width = Math.round(progress/allprogress * 100) + "%";
+
+        if(Math.round(progress/allprogress * 100) >= 100){
+            setTimeout(function(){
+                progressbar.style.height = "0%";
+            },1000);
+        }
+
       })
       .catch((error) => console.error(error));
 };
 
-function addAssignmentToCal(assignmentData){
+function addAssignmentToCal(assignmentData, cv_cid){
     const eventTitle = assignmentData.title;
     if (eventTitle === "") {
         return;
     }
 
     const newEvent = {
-        title: eventTitle
+        title: "("+ cvidToName.get(cv_cid) + ") :\n" + eventTitle,
+        icon: cvidToImg.get(cv_cid)
     };
 
     dueDate = assignmentData.duedate;
@@ -212,8 +250,8 @@ function addAssignmentToCal(assignmentData){
     let month = Number(dueDate[1]) - 1;
     let year = Number(dueDate[0]);
     
-    console.log(newEvent);
-    console.log(day, month, year);
+    //console.log(newEvent);
+    //console.log(day, month, year);
     
     let eventAdded = false;
 
@@ -235,7 +273,6 @@ function addAssignmentToCal(assignmentData){
         });
     }
 
-    console.log(eventsArr);
     addEventWrapper.classList.remove("active");
 
     addEventTitle.value = "";
@@ -340,19 +377,22 @@ function getActiveDay(date) {
 
 function updateEvents(date) {
     let events = "";
-    console.log(date, month, year);
-    console.log(eventsArr);
+    // console.log(date, month, year);
+    // console.log(eventsArr);
     eventsArr.forEach((event) => {
         if (date == event.day && month + 1 == event.month && year == event.year) {
             event.events.forEach((event) => {
+                if(event.icon == null) event.icon = 'https://cdn-icons-png.flaticon.com/512/4552/4552718.png';
+
                 events += `
                 <div class="event">
                     <div class="title">
-                        <i class="fas fa-circle"></i>
+                        <img src=${event.icon} height="50" width="50"></img>
                         <h3 class="event-title">${event.title}</h3>
                     </div>
                 </div>
                 `;
+                
             });
         }
     });
@@ -371,49 +411,50 @@ function updateEvents(date) {
 addEventSubmit.addEventListener("click", () => {
     const eventTitle = addEventTitle.value;
 
-    if (eventTitle === "") {
-        alert("Please fill event name");
-        return;
-    }
+    // if (eventTitle === "") {
+    //     alert("Please fill event name");
+    //     return;
+    // }
 
-    const newEvent = {
-        title: eventTitle
-    };
+    // const newEvent = {
+    //     title: eventTitle
+    // };
 
-    console.log(newEvent);
-    console.log(activeDay);
+    // console.log(newEvent);
+    // console.log(activeDay);
 
-    let eventAdded = false;
+    // let eventAdded = false;
 
-    if (eventsArr.length > 0) {
-        eventsArr.forEach((item) => {
-            if (item.day === activeDay && item.month === month + 1 && item.year === year) {
-                item.events.push(newEvent);
-                eventAdded = true;
-            }
-        });
-    }
+    // if (eventsArr.length > 0) {
+    //     eventsArr.forEach((item) => {
+    //         if (item.day === activeDay && item.month === month + 1 && item.year === year) {
+    //             item.events.push(newEvent);
+    //             eventAdded = true;
+    //         }
+    //     });
+    // }
 
-    if (!eventAdded) {
-        eventsArr.push({
-            day: activeDay,
-            month: month + 1,
-            year: year,
-            events: [newEvent],
-        });
-    }
+    // if (!eventAdded) {
+    //     eventsArr.push({
+    //         day: activeDay,
+    //         month: month + 1,
+    //         year: year,
+    //         events: [newEvent],
+    //     });
+    // }
 
-    console.log(eventsArr);
-    addEventWrapper.classList.remove("active");
+    // console.log(eventsArr);
+    // addEventWrapper.classList.remove("active");
 
-    addEventTitle.value = "";
-    updateEvents(activeDay);
+    // addEventTitle.value = "";
     addItem(eventTitle);
+    updateEvents(activeDay);
+    
 
-    const activeDayElem = document.querySelector(".day.active");
-    if (!activeDayElem.classList.contains("event")) {
-        activeDayElem.classList.add("event");
-    }
+    // const activeDayElem = document.querySelector(".day.active");
+    // if (!activeDayElem.classList.contains("event")) {
+    //     activeDayElem.classList.add("event");
+    // }
 });
 
 //function to delete event when clicked on event
@@ -428,9 +469,12 @@ eventsContainer.addEventListener("click", (e) => {
             event.year === year
           ) {
             event.events.forEach((item, index) => {
-              if (item.title === eventTitle) {
+              console.log(item, eventTitle);
+              if (item.title == eventTitle) {
                 event.events.splice(index, 1);
+                deleteItem(item.id);
               }
+
             });
             //if no events left in a day then remove that day from eventsArr
             if (event.events.length === 0) {
@@ -446,9 +490,27 @@ eventsContainer.addEventListener("click", (e) => {
         updateEvents(activeDay);
       }
     }
-  });
+});
 
 // Data-Base Section
+function addDBID(DB_Id){
+    for(let i = 0; i < allDB_Id.length; ++i){
+        if(allDB_Id[i] == DB_Id){
+            return;   
+        }
+    }
+    allDB_Id.push(DB_Id);
+}
+
+function checkExited(DB_Id){
+    for(let i = 0; i < allDB_Id.length; ++i){
+        if(allDB_Id[i] == DB_Id){
+            return true;   
+        }
+    }
+    return false;
+}
+
 const getItemsFromDB = async () => {
     const options = {
       method: "GET",
@@ -459,7 +521,10 @@ const getItemsFromDB = async () => {
       .then((data) => {
         itemsData = data;
         for(let i = 0; i < itemsData.length; ++i){
-            addItemToCal(itemsData[i])
+            if(checkExited(itemsData[i].id)) continue;
+
+            addItemToCal(itemsData[i]);
+            addDBID(itemsData[i].id);
         }
       })
       .catch((error) => console.error(error));
@@ -485,11 +550,11 @@ const addItem = async (title) => {
     
     await fetch(`http://${backendIPAddress}/items`, options)
       .then((response)=>{
-  
+        console.log("Item Added");
       })
       .catch((error)=>console.error(error));
   
-    //await getItemsFromDB();
+    await getItemsFromDB();
     //showItemsInTable(itemsData);
   
 };
@@ -501,28 +566,27 @@ const deleteItem = async (id) => {
     };
     await fetch(`http://${backendIPAddress}/items/${id}`, options)
       .then((response)=>{
-        console.log(response);
+        console.log("Item deleted", response);
       })
       .catch((error)=>console.error(error));
-
-    //await getItemsFromDB();
 };
   
 function addItemToCal(data){
     const eventTitle = data.events;
-    if (eventTitle === "") {
+    if (eventTitle === "" || checkExited(data.id)) {
         return;
     }
 
     const newEvent = {
-        title: eventTitle
+        title: eventTitle,
+        id : data.id
     };
 
     let day = data.day;
     let month = data.month;
     let year = data.year;
     
-    console.log(day, month, year);
+    //console.log(day, month, year);
     
     let eventAdded = false;
 
@@ -544,7 +608,7 @@ function addItemToCal(data){
         });
     }
 
-    console.log(eventsArr);
+    //console.log(eventsArr);
     addEventWrapper.classList.remove("active");
 
     addEventTitle.value = "";

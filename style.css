@@ -91,6 +91,7 @@ body {
 }
 
 .calendar .days {
+    display: inline-block;
     width: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -99,9 +100,11 @@ body {
     font-size: 1rem;
     font-weight: 500;
     margin-bottom: 20px;
+    
 }
 
 .calendar .days .day {
+    
     width: 14.28%;
     height: 90px;
     display: flex;
@@ -417,4 +420,19 @@ add-event-footer {
     .right .today-date {
       padding: 20px;
     }
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f2f2f2;
+    border-radius: 10px;
+  }
+  
+  .progress {
+    height: 100%;
+    background-color: #4caf50;
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease-in-out;
   }
