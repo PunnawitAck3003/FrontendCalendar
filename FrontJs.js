@@ -124,7 +124,6 @@ function initCalendar() {
   addListner();
 }
 
-
 function changeMonthCalendar() {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -510,3 +509,140 @@ function getEvents() {
   }
   eventsArr.push(...JSON.parse(localStorage.getItem("events")));
 }
+
+// Get data section na krab
+let CvidToData = new Map();
+let allCvId = [];
+let progress = 0;
+let allprogress = 0;
+
+const getUserProfile = async () => {
+  const options = {
+    method: "GET",
+    credentials: "include",
+  };
+  await fetch(
+    `http://${backendIPAddress}/courseville/get_profile_info`,
+    options
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      data = data.data.student;
+
+      // add course info to CvidTodata
+      allprogress = data.length;
+      for(let i = 0; i < data.length; ++i){
+        getCourseInfo(data[i].cv_cid);
+        allCvId.push(data[i].cv_cid);
+      }
+
+      for(let i = 0; i < allCvId.length; ++i){
+        getAllAssignment(allCvId[i]);
+      }
+    })
+    .catch((error) => console.error(error));
+};
+
+const getCourse = async () => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville/get_courses`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
+};
+
+const getCourseInfo = async (cv_cid) => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(`http://${backendIPAddress}/courseville/get_course_info/${cv_cid}`, options)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("found", cv_cid, data.data);
+        CvidToData.set(cv_cid, data.data);
+      })
+      .catch((error) => console.error(error));
+};
+
+const getAllAssignment = async (cv_cid) => {
+
+    const options = {
+        method: "GET",
+        credentials: "include",
+      };
+      await fetch(
+        `http://${backendIPAddress}/courseville/get_course_assignments/${cv_cid}`,
+        options
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          Alldata = data.data;
+          allprogress += Alldata.length;
+
+          for(let i = 0; i < Alldata.length; ++i){
+            getAssignmentInfo(Alldata[i], cv_cid);
+          }
+          
+        })
+        .catch((error) => console.error(error));
+};
+
+const getAssignmentInfo = async (assignmentsData, cv_cid) => {
+    let itemid = assignmentsData.itemid;
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville/get_assignment_detail/${itemid}`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        addAssignmentToCal(data.data, cv_cid);
+        progress++;
+
+        console.log(Math.round(progress/allprogress * 100) + "%");
+
+      })
+      .catch((error) => console.error(error));
+};
+
+function addAssignmentToCal(assignmentData, cv_cid){
+  console.log(assignmentData);
+
+  // if title empty then do nothing
+  if (assignmentData.title === "") {
+      return;
+  }
+
+  const cvidData = CvidToData.get(cv_cid);
+  //data about assignment
+  const newEvent = {
+      subject: cvidData.title,
+      title: assignmentData.title,
+      icon: cvidData.course_icon,
+      year: cvidData.year,
+      semester: cvidData.semester
+  };
+
+  dueDate = assignmentData.duedate;
+  dueDate = dueDate.split('-');
+  let day = Number(dueDate[2]);
+  let month = Number(dueDate[1]) - 1;
+  let year = Number(dueDate[0]);
+
+    /// TODO add assignmentData to calendar na krab
+}
+
+// init data from mycoruseville (first call)
+getUserProfile();

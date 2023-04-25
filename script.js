@@ -1,5 +1,7 @@
 const backendIPAddress = "127.0.0.1:3000";
 
+console.log();
+
 const calendar = document.querySelector(".calendar");
 const date = document.querySelector(".date");
 const daysContainer = document.querySelector(".days");
@@ -30,6 +32,7 @@ let allDB_Id = [];
 
 let cvidToName = new Map();
 let cvidToImg = new Map();
+
 
 // const eventsArr = [
 //     {
@@ -138,9 +141,12 @@ const getUserProfile = async () => {
     .then((response) => response.json())
     .then((data) => {
       data = data.data.student;
+      //cvidData = data;
+      //console.log(cvidData);
+      // return data;
+      allcvId = data.length;
       for(let i = 0; i < data.length; ++i){
-        //console.log(data[i])
-        allCvId.push(data[i].cv_cid);
+        //allCvId.push(data[i].cv_cid);
         getCourseInfo(data[i].cv_cid);
       }
 
@@ -175,13 +181,17 @@ const getCourseInfo = async (cv_cid) => {
     await fetch(`http://${backendIPAddress}/courseville/get_course_info/${cv_cid}`, options)
       .then((response) => response.json())
       .then((data) => {
-        console.log("found", cv_cid, data.data.title);
-        cvidToName.set(cv_cid, data.data.title);
-        cvidToImg.set(cv_cid, data.data.course_icon);
+        cvidData.set(cv_cid, data.data);
+        currcvId += 1;
+
+        if(allcvId == currcvId) readyToUseData = true;
+        //console.log("found Info", cv_cid, data.data);
+        //console.log("found", cv_cid, data.data.title);
+        //cvidToName.set(cv_cid, data.data.title);
+        //cvidToImg.set(cv_cid, data.data.course_icon);
       })
       .catch((error) => console.error(error));
 };
-
 
 const getAllAssignment = async (cv_cid) => {
 
@@ -282,6 +292,7 @@ function addAssignmentToCal(assignmentData, cv_cid){
     if (!activeDayElem.classList.contains("event")) {
         activeDayElem.classList.add("event");
     }
+    return assignmentData;
 }
 
 function prevMonth() {
@@ -540,7 +551,6 @@ const addItem = async (title) => {
             }
     
     const options = {
-      method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
@@ -620,9 +630,19 @@ function addItemToCal(data){
     }
 }
 
+// Get data from my coursevill section
 
+let cvidData = new Map();
+let allcvId = 0;
+let currcvId = 0;
+let readyToUseData = false;
+function getAllCvidInfomation(){
+  getUserProfile();
+}
+
+console.log(getUserProfile());
 getUserProfile();
 initCalendar();
 getItemsFromDB();
 
-//getActiveDay(today.innerHTML);
+getAllCvidInfomation();
