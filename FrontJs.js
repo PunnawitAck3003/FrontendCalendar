@@ -1,23 +1,25 @@
 const backendIPAddress = "127.0.0.1:3000";
 
 const calendar = document.querySelector(".calendar"),
-  date = document.querySelector(".date"),
-  daysContainer = document.querySelector(".days"),
-  prev = document.querySelector(".prev"),
-  next = document.querySelector(".next"),
-  eventDay = document.querySelector(".event-day"),
-  eventDate = document.querySelector(".event-date"),
-  eventsContainer = document.querySelector(".events"),
-  addEventBtn = document.querySelector(".add-event"),
-  addEventWrapper = document.querySelector(".add-event-wrapper"),
-  addEventCloseBtn = document.querySelector(".event-close"),
-  addEventTitle = document.querySelector(".event-name"),
-  addEventSubmit = document.querySelector(".add-event-btn"),
-  openToDoListBtn = document.querySelector(".to-do-button"),
-  toDoListOverlay = document.querySelector(".to-do-list-overlay"),
-  toDoListCloseBtn = document.querySelector(".to-do-close");
-  monthSelect = document.querySelector(".month-select-box")
-  monthSelectBtn = document.querySelector(".month-select-submit")
+date = document.querySelector(".date"),
+daysContainer = document.querySelector(".days"),
+prev = document.querySelector(".prev"),
+next = document.querySelector(".next"),
+eventDay = document.querySelector(".event-day"),
+eventDate = document.querySelector(".event-date"),
+eventsContainer = document.querySelector(".events"),
+addEventBtn = document.querySelector(".add-event"),
+addEventWrapper = document.querySelector(".add-event-wrapper"),
+addEventCloseBtn = document.querySelector(".event-close"),
+addEventTitle = document.querySelector(".event-name"),
+addEventSubmit = document.querySelector(".add-event-btn"),
+openToDoListBtn = document.querySelector(".to-do-button"),
+toDoListOverlay = document.querySelector(".to-do-list-overlay"),
+toDoListCloseBtn = document.querySelector(".to-do-close-button"),
+monthSelect = document.querySelector(".month-select-box"),
+monthSelectBtn = document.querySelector(".month-select-submit"),
+eventChoiceBtn = document.querySelector(".add-event-choice-button"),
+eventChoiceBox = document.querySelector(".add-event-choice-box");
 
 const listMonth = document.querySelectorAll(".list-month");
 
@@ -25,6 +27,23 @@ let today = new Date();
 let activeDay;
 let month = today.getMonth();
 let year = today.getFullYear();
+let currentSemester;
+let currentAcademicYear;
+
+function getCurrAcademicYear(){
+  if (month >= 7 && month <= 11){
+    currentSemester = 1;
+    currentAcademicYear = year;
+  } else if( 0 <= month <=4){
+    currentSemester = 2;
+    currentAcademicYear = year-1;
+  } else if( 5 <= month <= 6 ){
+    currentSemester = 3;
+    currentAcademicYear = year-1;
+  }
+}
+getCurrAcademicYear();
+
 
 const months = [
   "January",
@@ -45,26 +64,13 @@ const monthsAbbrev = {
   "Jan":0,"Feb":1,"Mar":2,"Apr":3,"May":4,"Jun":5,
   "Jul":6,"Aug":7,"Sep":8,"Oct":9,"Nov":10,"Dec":11,
 }
-// const eventsArr = [
-//   {
-//     day: 13,
-//     month: 11,
-//     year: 2022,
-//     events: [
-//       {
-//         title: "Event 1 lorem ipsun dolar sit genfa tersd dsad ",
-//         time: "10:00 AM",
-//       },
-//       {
-//         title: "Event 2",
-//         time: "11:00 AM",
-//       },
-//     ],
-//   },
-// ];
 
 const eventsArr = [];
 getEvents();
+console.log(eventsArr);
+const authorizeApplication = () => {
+  window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
+};
 
 //function to add days in days with class day and prev-date next-date on previous month and next month days and active on today
 function initCalendar() {
@@ -206,9 +212,6 @@ function nextMonth() {
   checkForActive();
 }
 
-prev.addEventListener("click", prevMonth);
-next.addEventListener("click", nextMonth);
-
 initCalendar();
 
 //function to add active to day tracing back from event day and event date
@@ -307,6 +310,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
+//function to select month for navigation
 function addSelected(){
   listMonth.forEach((listedMonth) =>  {
     listedMonth.addEventListener("click", (e) =>{
@@ -366,7 +370,7 @@ function updateEvents(date) {
         events += `<div class="event">
             <div class="title">
               <i class="fas fa-circle"></i>
-              <h3 class="event-title">${event.title}</h3>
+              <div class="event-title">${event.title}</div>
             </div>
         </div>`;
       });
@@ -374,12 +378,17 @@ function updateEvents(date) {
   });
   if (events === "") {
     events = `<div class="no-event">
-            <h3>No Events</h3>
+            <div>No Events</div>
         </div>`;
+    eventsContainer.style.overflowY = "hidden";
+  }else{
+    eventsContainer.style.overflowY = "auto";
   }
   eventsContainer.innerHTML = events;
   saveEvents();
 }
+
+
 
 //function to add event
 addEventBtn.addEventListener("click", () => {
@@ -393,8 +402,45 @@ addEventCloseBtn.addEventListener("click", () => {
 document.addEventListener("click", (e) => {
   if (e.target !== addEventBtn && !addEventWrapper.contains(e.target)) {
     addEventWrapper.classList.remove("active");
+    eventChoiceBox.classList.remove("active");
   }
 });
+
+eventChoiceBtn.addEventListener("click", () =>{
+  eventChoiceBox.classList.add("active");
+})
+
+
+
+function changeChoiceBtnText() {
+  let choiceBtns = document.querySelectorAll(".event-choice");
+  choiceBtns.forEach((choiceBtn)=>{
+    console.log(choiceBtn);
+    choiceBtn.addEventListener("click", () => {
+      eventChoiceBtn.innerHTML = choiceBtn.innerHTML;
+    });
+  })
+}
+changeChoiceBtnText();
+
+function getParamsFromChoiceBtn(){
+  let subjCVId = eventChoiceBtn.value;
+  if (Number(subjCVId) === 0){
+    return {
+      icon: "/imgsrc/nocourse.png",
+      year: currentAcademicYear,
+      semester: currentSemester
+    }
+  }
+  console.log(Number(subjCVId));
+  let subjData = CvidToData.get(Number(subjCVId));
+  let arrangedData = {
+    icon: subjData.icon,
+    year: subjData.year,
+    semester: subjData.semester
+  }
+  return arrangedData;
+}
 
 //allow 50 chars in eventtitle
 addEventTitle.addEventListener("input", (e) => {
@@ -416,7 +462,7 @@ addEventSubmit.addEventListener("click", () => {
       event.year === year
     ) {
       event.events.forEach((event) => {
-        if (event.title === eventTitle) {
+        if (event.title === eventTitle && event.subject === eventChoiceBtn.innerHTML)  {
           eventExist = true;
         }
       });
@@ -425,9 +471,15 @@ addEventSubmit.addEventListener("click", () => {
   if (eventExist) {
     alert("Event already added");
     return;
+  
+  let paramsChoice = getParamsFromChoiceBtn();
   }
   const newEvent = {
+    subject: eventChoiceBtn.innerHTML,
     title: eventTitle,
+    icon: paramsChoice.icon,
+    year: paramsChoice.year,
+    semester: paramsChoice.semester
   };
   console.log(newEvent);
   console.log(activeDay);
@@ -510,3 +562,219 @@ function getEvents() {
   }
   eventsArr.push(...JSON.parse(localStorage.getItem("events")));
 }
+
+const inputBox = document.querySelector(".inputField input");
+const addBtn = document.querySelector(".to-do-input-button");
+const todoList = document.querySelector(".todoList");
+const deleteAllBtn = document.querySelector(".to-do-clear-button");
+// onkeyup event
+inputBox.onkeyup = ()=>{
+  let userEnteredValue = inputBox.value; //getting user entered value
+  if(userEnteredValue.trim() != 0){ //if the user value isn't only spaces
+    addBtn.classList.add("active"); //active the add button
+  }else{
+    addBtn.classList.remove("active"); //unactive the add button
+  }
+}
+showTasks(); //calling showTask function
+addBtn.onclick = ()=>{ //when user click on plus icon button
+  let userEnteredValue = inputBox.value; //getting input field value
+  let getLocalStorageData = localStorage.getItem("New Todo"); //getting localstorage
+  if(getLocalStorageData == null){ //if localstorage has no data
+    listArray = []; //create a blank array
+  }else{
+    listArray = JSON.parse(getLocalStorageData);  //transforming json string into a js object
+  }
+  listArray.push(userEnteredValue); //pushing or adding new value in array
+  localStorage.setItem("New Todo", JSON.stringify(listArray)); //transforming js object into a json string
+  showTasks(); //calling showTask function
+  addBtn.classList.remove("active"); //unactive the add button once the task added
+}
+document.body.addEventListener('keypress', (e) =>{
+  let userData = inputBox.value;
+  if(e.key == 'Enter' && userData.trim() != 0){
+
+      let userData = inputBox.value;
+      let getLocalStorage = localStorage.getItem("New Todo"); 
+      if(getLocalStorage == null){
+          listArr = [];
+  }else{
+      listArr = JSON.parse(getLocalStorage); 
+  }
+  listArr.push(userData);
+  localStorage.setItem("New Todo", JSON.stringify(listArr)); 
+  showTasks();
+  addBtn.classList.remove("active");
+  }
+});
+function showTasks(){
+  let getLocalStorageData = localStorage.getItem("New Todo");
+  if(getLocalStorageData == null){
+    listArray = [];
+  }else{
+    listArray = JSON.parse(getLocalStorageData); 
+  }
+  const pendingTasksNumb = document.querySelector(".pendingTasks");
+  pendingTasksNumb.textContent = listArray.length; //passing the array length in pendingtask
+  if(listArray.length > 0){ //if array length is greater than 0
+    deleteAllBtn.classList.add("active"); //active the delete button
+  }else{
+    deleteAllBtn.classList.remove("active"); //unactive the delete button
+  }
+  let newLiTag = "";
+  listArray.forEach((element, index) => {
+    newLiTag += `<li>${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
+  });
+  todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
+  inputBox.value = ""; //once task added leave the input field blank
+}
+// delete task function
+function deleteTask(index){
+  let getLocalStorageData = localStorage.getItem("New Todo");
+  listArray = JSON.parse(getLocalStorageData);
+  listArray.splice(index, 1); //delete or remove the li
+  localStorage.setItem("New Todo", JSON.stringify(listArray));
+  showTasks(); //call the showTasks function
+}
+// delete all tasks function
+deleteAllBtn.onclick = ()=>{
+  listArray = []; //empty the array
+  localStorage.setItem("New Todo", JSON.stringify(listArray)); //set the item in localstorage
+  showTasks(); //call the showTasks function
+}
+
+let CvidToData = new Map();
+let allCvId = [];
+let progress = 0;
+let allprogress = 0;
+
+const getUserProfile = async () => {
+  const options = {
+    method: "GET",
+    credentials: "include",
+  };
+  await fetch(
+    `http://${backendIPAddress}/courseville/get_profile_info`,
+    options
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      data = data.data.student;
+
+      // add course info to CvidTodata
+      allprogress = data.length;
+      for(let i = 0; i < data.length; ++i){
+        getCourseInfo(data[i].cv_cid);
+        allCvId.push(data[i].cv_cid);
+      }
+
+      for(let i = 0; i < allCvId.length; ++i){
+        getAllAssignment(allCvId[i]);
+      }
+    })
+    .catch((error) => console.error(error));
+};
+
+const getCourse = async () => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville/get_courses`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => console.error(error));
+};
+
+const getCourseInfo = async (cv_cid) => {
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(`http://${backendIPAddress}/courseville/get_course_info/${cv_cid}`, options)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("found", cv_cid, data.data);
+        CvidToData.set(cv_cid, data.data);
+      })
+      .catch((error) => console.error(error));
+};
+
+const getAllAssignment = async (cv_cid) => {
+
+    const options = {
+        method: "GET",
+        credentials: "include",
+      };
+      await fetch(
+        `http://${backendIPAddress}/courseville/get_course_assignments/${cv_cid}`,
+        options
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          Alldata = data.data;
+          allprogress += Alldata.length;
+
+          for(let i = 0; i < Alldata.length; ++i){
+            getAssignmentInfo(Alldata[i], cv_cid);
+          }
+          
+        })
+        .catch((error) => console.error(error));
+};
+
+const getAssignmentInfo = async (assignmentsData, cv_cid) => {
+    let itemid = assignmentsData.itemid;
+    const options = {
+      method: "GET",
+      credentials: "include",
+    };
+    await fetch(
+      `http://${backendIPAddress}/courseville/get_assignment_detail/${itemid}`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        addAssignmentToCal(data.data, cv_cid);
+        progress++;
+
+        console.log(Math.round(progress/allprogress * 100) + "%");
+
+      })
+      .catch((error) => console.error(error));
+};
+
+function addAssignmentToCal(assignmentData, cv_cid){
+  console.log(assignmentData);
+
+  // if title empty then do nothing
+  if (assignmentData.title === "") {
+      return;
+  }
+
+  const cvidData = CvidToData.get(cv_cid);
+  //data about assignment
+  const newEvent = {
+      subject: cvidData.title,
+      title: assignmentData.title,
+      icon: cvidData.course_icon,
+      year: cvidData.year,
+      semester: cvidData.semester
+  };
+
+  dueDate = assignmentData.duedate;
+  dueDate = dueDate.split('-');
+  let day = Number(dueDate[2]);
+  let month = Number(dueDate[1]) - 1;
+  let year = Number(dueDate[0]);
+
+    /// TODO add assignmentData to calendar na krab
+}
+
+// init data from mycoruseville (first call)
+getUserProfile();
