@@ -128,6 +128,7 @@ function initCalendar() {
   }
   daysContainer.innerHTML = days;
   addListner();
+  displayFire(month);
 }
 
 function changeMonthCalendar() {
@@ -183,6 +184,7 @@ function changeMonthCalendar() {
   daysContainer.innerHTML = days;
 
   addListner();
+  displayFire(month);
 }
 
 //function to add month and year on prev and next button
@@ -905,3 +907,13 @@ changeChoiceBtnText();
 
 // init data from mycoruseville (first call)
 getCourse();
+
+function displayFire(currentMonth) {
+  const fire = document.querySelector(".fire")
+  if ([2, 4, 9, 11].includes(currentMonth)){
+    fire.style.display = "inline";
+  }
+  else {
+    fire.style.display = "none";
+  }
+}
