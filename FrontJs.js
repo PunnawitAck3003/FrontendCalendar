@@ -66,7 +66,7 @@ const monthsAbbrev = {
 }
 
 const eventsArr = [];
-//getEvents();
+getEvents();
 console.log(eventsArr);
 const authorizeApplication = () => {
   window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
@@ -128,7 +128,10 @@ function initCalendar() {
   }
   daysContainer.innerHTML = days;
   addListner();
+  displayFire(month);
 }
+
+
 
 function changeMonthCalendar() {
   const firstDay = new Date(year, month, 1);
@@ -181,7 +184,7 @@ function changeMonthCalendar() {
     days += `<div class="day next-date">${j}</div>`;
   }
   daysContainer.innerHTML = days;
-
+  displayFire(month);
   addListner();
 }
 
@@ -366,12 +369,9 @@ function updateEvents(date) {
       year === event.year
     ) {
       event.events.forEach((event) => {
-        if(event.icon === null || event.icon == ' ') event.icon = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png"
-        
-
         events += `<div class="event">
             <div class="title">
-              <img src=${event.icon} height="50" width="50"></img>
+              <i class="fas fa-circle"></i>
               <div class="event-title">${event.title}</div>
             </div>
         </div>`;
@@ -387,8 +387,10 @@ function updateEvents(date) {
     eventsContainer.style.overflowY = "auto";
   }
   eventsContainer.innerHTML = events;
-  //saveEvents();
+  saveEvents();
 }
+
+
 
 //function to add event
 addEventBtn.addEventListener("click", () => {
@@ -410,11 +412,24 @@ eventChoiceBtn.addEventListener("click", () =>{
   eventChoiceBox.classList.add("active");
 })
 
+
+
+function changeChoiceBtnText() {
+  let choiceBtns = document.querySelectorAll(".event-choice");
+  choiceBtns.forEach((choiceBtn)=>{
+    console.log(choiceBtn);
+    choiceBtn.addEventListener("click", () => {
+      eventChoiceBtn.innerHTML = choiceBtn.innerHTML;
+    });
+  })
+}
+changeChoiceBtnText();
+
 function getParamsFromChoiceBtn(){
   let subjCVId = eventChoiceBtn.value;
   if (Number(subjCVId) === 0){
     return {
-      icon: " ",
+      icon: "/imgsrc/nocourse.png",
       year: currentAcademicYear,
       semester: currentSemester
     }
@@ -436,9 +451,31 @@ addEventTitle.addEventListener("input", (e) => {
 //function to add event to eventsArr
 addEventSubmit.addEventListener("click", () => {
   const eventTitle = addEventTitle.value;
-
-  let paramsChoice = getParamsFromChoiceBtn();
+  if (eventTitle === "") {
+    alert("Please fill all the fields");
+    return;
+  }
+  //check if event is already added
+  let eventExist = false;
+  eventsArr.forEach((event) => {
+    if (
+      event.day === activeDay &&
+      event.month === month + 1 &&
+      event.year === year
+    ) {
+      event.events.forEach((event) => {
+        if (event.title === eventTitle && event.subject === eventChoiceBtn.innerHTML)  {
+          eventExist = true;
+        }
+      });
+    }
+  });
+  if (eventExist) {
+    alert("Event already added");
+    return;
   
+  let paramsChoice = getParamsFromChoiceBtn();
+  }
   const newEvent = {
     subject: eventChoiceBtn.innerHTML,
     title: eventTitle,
@@ -446,9 +483,40 @@ addEventSubmit.addEventListener("click", () => {
     year: paramsChoice.year,
     semester: paramsChoice.semester
   };
+  console.log(newEvent);
+  console.log(activeDay);
+  let eventAdded = false;
+  if (eventsArr.length > 0) {
+    eventsArr.forEach((item) => {
+      if (
+        item.day === activeDay &&
+        item.month === month + 1 &&
+        item.year === year
+      ) {
+        item.events.push(newEvent);
+        eventAdded = true;
+      }
+    });
+  }
 
-  addItemToDB(newEvent);
+  if (!eventAdded) {
+    eventsArr.push({
+      day: activeDay,
+      month: month + 1,
+      year: year,
+      events: [newEvent],
+    });
+  }
+
+  console.log(eventsArr);
+  addEventWrapper.classList.remove("active");
+  addEventTitle.value = "";
   updateEvents(activeDay);
+  //select active day and add event class if not added
+  const activeDayEl = document.querySelector(".day.active");
+  if (!activeDayEl.classList.contains("event")) {
+    activeDayEl.classList.add("event");
+  }
 });
 
 //function to delete event when clicked on event
@@ -463,15 +531,8 @@ eventsContainer.addEventListener("click", (e) => {
           event.year === year
         ) {
           event.events.forEach((item, index) => {
-            if(item.type == "Assignment"){
-              alert("You can't delete assignment");
-              return;
-            }
-
             if (item.title === eventTitle) {
-              console.log(item);
               event.events.splice(index, 1);
-              deleteItem(item.id);
             }
           });
           //if no events left in a day then remove that day from eventsArr
@@ -491,18 +552,18 @@ eventsContainer.addEventListener("click", (e) => {
 });
 
 //function to save events in local storage
-// function saveEvents() {
-//   localStorage.setItem("events", JSON.stringify(eventsArr));
-// }
+function saveEvents() {
+  localStorage.setItem("events", JSON.stringify(eventsArr));
+}
 
 //function to get events from local storage
-// function getEvents() {
-//   //check if events are already saved in local storage then return event else nothing
-//   if (localStorage.getItem("events") === null) {
-//     return;
-//   }
-//   eventsArr.push(...JSON.parse(localStorage.getItem("events")));
-// }
+function getEvents() {
+  //check if events are already saved in local storage then return event else nothing
+  if (localStorage.getItem("events") === null) {
+    return;
+  }
+  eventsArr.push(...JSON.parse(localStorage.getItem("events")));
+}
 
 const inputBox = document.querySelector(".inputField input");
 const addBtn = document.querySelector(".to-do-input-button");
@@ -584,138 +645,6 @@ deleteAllBtn.onclick = ()=>{
   showTasks(); //call the showTasks function
 }
 
-// Data Base Section
-let allDB_Id = []
-
-function addDBID(DB_Id){
-  for(let i = 0; i < allDB_Id.length; ++i){
-      if(allDB_Id[i] == DB_Id){
-          return;   
-      }
-  }
-  allDB_Id.push(DB_Id);
-}
-
-function checkExited(DB_Id){
-  for(let i = 0; i < allDB_Id.length; ++i){
-      if(allDB_Id[i] == DB_Id){
-          return true;   
-      }
-  }
-  return false;
-}
-
-const getItemsFromDB = async () => {
-  const options = {
-    method: "GET",
-    credentials: "include",
-  };
-  await fetch(`http://${backendIPAddress}/items`, options)
-    .then((response) => response.json())
-    .then((data) => {
-      itemsData = data;
-      for(let i = 0; i < itemsData.length; ++i){
-          if(checkExited(itemsData[i].id)) continue;
-
-          addItemToCal(itemsData[i]);
-          addDBID(itemsData[i].id);
-      }
-    })
-    .catch((error) => console.error(error));
-};
-
-const addItemToDB = async (data) => {
-
-  const itemToAdd = {
-              day: activeDay,
-              month: month,
-              year: year,
-              event : data
-          }
-  
-  const options = {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(itemToAdd)
-  };
-  
-  await fetch(`http://${backendIPAddress}/items`, options)
-    .then((response)=>{
-      console.log("Item Added");
-    })
-    .catch((error)=>console.error(error));
-
-  await getItemsFromDB();
-
-};
-
-const deleteItem = async (id) => {
-  const options = {
-    method: "DELETE",
-    credentials: "include"
-  };
-  await fetch(`http://${backendIPAddress}/items/${id}`, options)
-    .then((response)=>{
-      console.log("Item deleted", response);
-    })
-    .catch((error)=>console.error(error));
-};
-
-function addItemToCal(data){
-  const event = data.event;
-
-  if (event == null || event.title === "" || checkExited(data.id)) {
-      return;
-  }
-
-  let day = data.day;
-  let month = data.month;
-  let year = data.year;
-  
-  const newEvent = {
-      title: event.title,
-      id : data.id,
-      icon: ' ',
-      year: event.year,
-      semester: event.semester
-  };
-
-  let eventAdded = false;
-
-  if (eventsArr.length > 0) {
-      eventsArr.forEach((item) => {
-          if (item.day === day && item.month === month + 1 && item.year === year) {
-              item.events.push(newEvent);
-              eventAdded = true;
-          }
-      });
-  }
-
-  if (!eventAdded) {
-      eventsArr.push({
-          day: day,
-          month: month + 1,
-          year: year,
-          events: [newEvent],
-      });
-  }
-
-  addEventWrapper.classList.remove("active");
-
-  addEventTitle.value = "";
-  updateEvents(activeDay);
-
-  const activeDayElem = document.querySelector(".day.active");
-  if (!activeDayElem.classList.contains("event")) {
-      activeDayElem.classList.add("event");
-  }
-}
-
-getItemsFromDB();
-
 let CvidToData = new Map();
 let allCvId = [];
 let progress = 0;
@@ -732,7 +661,18 @@ const getUserProfile = async () => {
   )
     .then((response) => response.json())
     .then((data) => {
-      console.log("data");
+      data = data.data.student;
+
+      // add course info to CvidTodata
+      allprogress = data.length;
+      for(let i = 0; i < data.length; ++i){
+        getCourseInfo(data[i].cv_cid);
+        allCvId.push(data[i].cv_cid);
+      }
+
+      for(let i = 0; i < allCvId.length; ++i){
+        getAllAssignment(allCvId[i]);
+      }
     })
     .catch((error) => console.error(error));
 };
@@ -748,18 +688,7 @@ const getCourse = async () => {
     )
       .then((response) => response.json())
       .then((data) => {
-          data = data.data.student;
-    
-          // add course info to CvidTodata
-          for(let i = 0; i < data.length; ++i){
-            getCourseInfo(data[i].cv_cid);
-            allCvId.push(data[i].cv_cid);
-          }
-
-          for(let i = 0; i < allCvId.length; ++i){
-            getAllAssignment(allCvId[i]);
-          }
-
+        console.log(data);
       })
       .catch((error) => console.error(error));
 };
@@ -818,14 +747,12 @@ const getAssignmentInfo = async (assignmentsData, cv_cid) => {
 
         console.log(Math.round(progress/allprogress * 100) + "%");
 
-        if(progress === allprogress) addChoices();
-
       })
       .catch((error) => console.error(error));
 };
 
 function addAssignmentToCal(assignmentData, cv_cid){
-  //console.log(assignmentData);
+  console.log(assignmentData);
 
   // if title empty then do nothing
   if (assignmentData.title === "") {
@@ -839,8 +766,7 @@ function addAssignmentToCal(assignmentData, cv_cid){
       title: assignmentData.title,
       icon: cvidData.course_icon,
       year: cvidData.year,
-      semester: cvidData.semester,
-      type : "Assignment"
+      semester: cvidData.semester
   };
 
   dueDate = assignmentData.duedate;
@@ -849,60 +775,19 @@ function addAssignmentToCal(assignmentData, cv_cid){
   let month = Number(dueDate[1]) - 1;
   let year = Number(dueDate[0]);
 
-  let eventAdded = false;
-
-    if (eventsArr.length > 0) {
-        eventsArr.forEach((item) => {
-            if (item.day === day && item.month === month + 1 && item.year === year) {
-                item.events.push(newEvent);
-                eventAdded = true;
-            }
-        });
-    }
-
-    if (!eventAdded) {
-        eventsArr.push({
-            day: day,
-            month: month + 1,
-            year: year,
-            events: [newEvent],
-        });
-    }
-
-    addEventWrapper.classList.remove("active");
-
-    addEventTitle.value = "";
-    updateEvents(activeDay);
-
-    const activeDayElem = document.querySelector(".day.active");
-    if (!activeDayElem.classList.contains("event")) {
-        activeDayElem.classList.add("event");
-    }
+    /// TODO add assignmentData to calendar na krab
 }
-
-function addChoices() {
-  let choiceCV = '<div class="event-choice none" value="0">No Course</div>';
-
-  allCvId.forEach((CvID) => {
-    let cv_cid_Data = CvidToData.get(CvID);
-    choiceCV += `<div class="event-choice" value=${CvID}">${cv_cid_Data.title}</div>`;
-  })
-
-  eventChoiceBox.innerHTML = choiceCV;
-}
-
-function changeChoiceBtnText() {
-  let choiceBtns = document.querySelectorAll(".event-choice");
-  choiceBtns.forEach((choiceBtn)=>{
-    console.log(choiceBtn);
-    choiceBtn.addEventListener("click", () => {
-      eventChoiceBtn.innerHTML = choiceBtn.innerHTML;
-      eventChoiceBox.classList.remove("active");
-    });
-  })
-}
-changeChoiceBtnText();
 
 // init data from mycoruseville (first call)
-getCourse();
+getUserProfile();
 
+
+function displayFire(currentMonth) {
+  const fire = document.querySelector(".fire")
+  if ([2, 4, 9, 11].includes(currentMonth)){
+    fire.style.display = "inline";
+  }
+  else {
+    fire.style.display = "none";
+  }
+}
