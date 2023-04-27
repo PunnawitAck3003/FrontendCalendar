@@ -14,28 +14,6 @@
     <title>Calendar | myCourseVille</title>
 </head>
 <body>
-    <div class="to-do-list-overlay">
-        <div class = "to-do-page-container">
-            <div class="to-do-top-title">To-Do List</div>
-            <div class = "to-do-list"></div>
-            <div class="to-do-add-header">
-                <div class="title">Add To-Do List</div>
-                <i class="fas fa-times to-do-close"></i>
-            </div>
-            <div class="to-do-add-body">
-                <div class="to-do-add-input">
-                    <input 
-                        type="text" 
-                        placeholder="Event Name" 
-                        class="to-do-add-name" 
-                    />
-                </div>
-            </div>
-            <div class="to-do-add-footer">
-                <button class="to-do-add-btn">Add To-Do List</button>
-            </div>
-        </div>
-    </div>
     <div class="container">
         <div class="left">
             <div class="calendar">
@@ -65,9 +43,9 @@
                 </div>
                 <div class="to-do-button">+</div>
                 <div class="month">
-                    <div class="prev">&lt;</div>
-                    <div class = "date">April 2023</div>
-                    <div class="next">&gt;</div>
+                    <div class="prev" onclick="prevMonth()">&lt;</div>
+                    <div class = "date"></div>
+                    <div class="next" onclick="nextMonth()">&gt;</div>
                 </div>
                 <div class="weekdays">
                     <div>sun</div>
@@ -83,6 +61,25 @@
             </div>
         </div>
         <div class="right">
+            <div class="to-do-list-overlay">
+                <div class = "to-do-page-container">
+                    <div class="to-do-header-container">
+                    <header class="to-do-header-title">To-do List</header>
+                    <button class="to-do-close-button">x</button>
+                    </div>
+                    <div class="inputField">
+                        <input type="text" placeholder="Add your new todo">
+                        <button class="to-do-input-button"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <ul class="todoList">
+
+                    </ul>
+                    <div class="to-do-footer">
+                        <span >You have <span class="pendingTasks"></span> pending tasks </span>
+                        <button class="to-do-clear-button">Clear ALL</button>
+                    </div>
+                </div>
+            </div>
             <div class = "event-page-container">
                 <div class="today-date">
                     <div class="event-day"></div>
@@ -101,6 +98,12 @@
                                 placeholder="Event Name" 
                                 class="event-name" 
                             />
+                        </div>
+                        <div class="add-event-choice">
+                            <button class="add-event-choice-button">Select Course</button>
+                            <div class="add-event-choice-box">
+                                <div class="event-choice none" value="0">No Course</div>
+                            </div>
                         </div>
                     </div>
                     <div class="add-event-footer">
