@@ -130,13 +130,7 @@ const getUserProfile = async () => {
   )
     .then((response) => response.json())
     .then((data) => {
-      data = data.data.student;
-      for(let i = 0; i < data.length; ++i){
-        allCvId.push(data[i].cv_cid);
-      }
-      for(let i = 0; i < allCvId.length; ++i){
-        getAllAssignment(allCvId[i]);
-    }
+      
     })
     .catch((error) => console.error(error));
 };
@@ -153,6 +147,13 @@ const getCourse = async () => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
+        data = data.data.student;
+      for(let i = 0; i < data.length; ++i){
+        allCvId.push(data[i].cv_cid);
+      }
+      for(let i = 0; i < allCvId.length; ++i){
+        getAllAssignment(allCvId[i]);
+    }
       })
       .catch((error) => console.error(error));
 };
@@ -557,7 +558,7 @@ function addItemToCal(data){
 }
 
 
-getUserProfile();
+getCourse();
 initCalendar();
 getItemsFromDB();
 

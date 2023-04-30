@@ -112,13 +112,13 @@ function initCalendar() {
       getActiveDay(i);
       updateEvents(i);
       if (event) {
-        days += `<div class="day today active event">${i}</div>`;
+        days += `<div class="day today active event">${i}<span class="event-marker"></span></div>`;
       } else {
         days += `<div class="day today active">${i}</div>`;
       }
     } else {
       if (event) {
-        days += `<div class="day event">${i}</div>`;
+        days += `<div class="day event">${i}<span class="event-marker"></span></div>`;
       } else {
         days += `<div class="day ">${i}</div>`;
       }
@@ -131,6 +131,7 @@ function initCalendar() {
   daysContainer.innerHTML = days;
   addListner();
   displayFire(month);
+
 }
 
 function changeMonthCalendar() {
@@ -187,6 +188,7 @@ function changeMonthCalendar() {
 
   addListner();
   displayFire(month);
+
 }
 
 //function to add month and year on prev and next button
@@ -911,9 +913,9 @@ function changeChoiceBtnText() {
   })
 }
 
-
 // init data from mycoruseville (first call)
 getCourse();
+
 
 function displayFire(currentMonth) {
   const fire = document.querySelector(".fire")
@@ -924,3 +926,6 @@ function displayFire(currentMonth) {
     fire.style.display = "none";
   }
 }
+const currentYear = new Date().getFullYear();
+const yearInput = document.querySelector('.year-input');
+yearInput.value = currentYear;
