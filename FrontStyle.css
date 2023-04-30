@@ -546,39 +546,6 @@ body{
   justify-content: center;
 }
 
-.add-event-choice .add-event-choice-box .event-choice{
-  cursor: pointer;
-  width: 80%;
-  min-height: 40px;
-  display: flex;
-  justify-content: center;
-}
-
-.add-event-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.add-event-footer .add-event-btn {
-  height: 40px;
-  font-size: 1rem;
-  font-weight: 500;
-  outline: none;
-  border: none;
-  color: #fff;
-  background-color: var(--primary-clr);
-  border-radius: 5px;
-  cursor: pointer;
-  padding: 5px 10px;
-  border: 1px solid var(--primary-clr);
-}
-.add-event-footer .add-event-btn:hover {
-  background-color: transparent;
-  color: var(--primary-clr);
-}
-
-
 /*section for login page*/
 #login-page {
     position: relative;
