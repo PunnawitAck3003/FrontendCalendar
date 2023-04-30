@@ -23,6 +23,9 @@ eventChoiceBox = document.querySelector(".add-event-choice-box");
 
 const listMonth = document.querySelectorAll(".list-month");
 
+let selectTask;
+let dragOverDay;
+
 let today = new Date();
 let activeDay;
 let month = today.getMonth();
@@ -293,6 +296,37 @@ function addListner() {
       }
     });
   });
+
+  days.forEach((day) => {
+    day.addEventListener("dragover", (e) =>{
+      e.preventDefault();
+      dragOverDay = day.innerHTML;
+    });
+    day.addEventListener("drop", drop);
+  });
+}
+
+function dropover(event){
+  event.preventDefault();
+  
+}
+
+function drop(event){
+  event.preventDefault();
+
+  const eventTitle = selectTask.innerText;
+  
+  const newEvent = {
+    title: eventTitle,
+    icon: ' ',
+    year: '2022',
+    semester: '2',
+  };
+
+  console.log(newEvent);
+
+  addItemToDB(newEvent, dragOverDay);
+  updateEvents(activeDay);
 }
 
 //function to open and close up to-do list overlay
@@ -452,7 +486,6 @@ addEventSubmit.addEventListener("click", () => {
   console.log(paramsChoice);
   
   const newEvent = {
-    subject: eventChoiceBtn.innerHTML,
     title: eventTitle,
     icon: paramsChoice.icon,
     year: paramsChoice.year,
@@ -542,6 +575,7 @@ inputBox.onkeyup = ()=>{
 }
 showTasks(); //calling showTask function
 addBtn.onclick = ()=>{ //when user click on plus icon button
+  // console.log("test");
   let userEnteredValue = inputBox.value; //getting input field value
   let getLocalStorageData = localStorage.getItem("New Todo"); //getting localstorage
   if(getLocalStorageData == null){ //if localstorage has no data
@@ -587,11 +621,22 @@ function showTasks(){
   }
   let newLiTag = "";
   listArray.forEach((element, index) => {
-    newLiTag += `<li>${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
+    newLiTag += `<li> <img src="https://cdn-icons-png.flaticon.com/512/4552/4552718.png" height="25" width="25"></img> ${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
   });
+
   todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
   inputBox.value = ""; //once task added leave the input field blank
+
+  let taskElement = document.querySelector(".todoList").getElementsByTagName("li");
+  for(let i = 0; i < taskElement.length; ++i){
+    taskElement[i].addEventListener("dragstart", (e) =>{
+      selectTask = taskElement[i];
+    });
+  }
+
 }
+
+
 // delete task function
 function deleteTask(index){
   let getLocalStorageData = localStorage.getItem("New Todo");
@@ -647,10 +692,12 @@ const getItemsFromDB = async () => {
     .catch((error) => console.error(error));
 };
 
-const addItemToDB = async (data) => {
-
+const addItemToDB = async (data, date) => {
+  if(date == null) date = activeDay;
+  date = Number(date);
+  
   const itemToAdd = {
-              day: activeDay,
+              day: date,
               month: month,
               year: year,
               event : data
