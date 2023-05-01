@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name = "viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel = "stylesheet" href = "FrontStyle.css"/>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
-      integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="FrontStyle.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+        integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>Calendar | myCourseVille</title>
 </head>
+
 <body>
+    <div class="top-right-button-container">
+        <div class="login-page-button" onclick="window.location.href='FrontLogin.html'">Login Page</div>
+        <div class="log-out-button" onclick="logout()">Log out</div>
+    </div>
     <div class="container">
         <div class="left">
             <div class="calendar">
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                  </div>
                 <div class="month-select-box">
                     <div class="month-selector">
                         <div class="list-months">
@@ -36,39 +35,16 @@
                             <div class="list-month">Nov</div>
                             <div class="list-month">Dec</div>
                         </div>
-                        <input 
-                            type="number"
-                            placeholder="Year"
-                            value="2022"
-                            class="year-input"
-                        />
+                        <input type="number" placeholder="Year" class="year-input" />
                         <button class="month-select-submit">Go</button>
                     </div>
                 </div>
                 <div class="to-do-button">+</div>
                 <div class="month">
                     <div class="prev" onclick="prevMonth()">&lt;</div>
-                    <div class = "date"></div>
+                    <div class="date"></div>
                     <div class="next" onclick="nextMonth()">&gt;</div>
-                    <div class="fire" title="เดือนสอบ!!!">
-                        <div class="fire-left">
-                        <div class="main-fire"></div>
-                        <div class="particle-fire"></div>
-                        </div>
-                        <div class="fire-center">
-                        <div class="main-fire"></div>
-                        <div class="particle-fire"></div>
-                        </div>
-                        <div class="fire-right">
-                        <div class="main-fire"></div>
-                        <div class="particle-fire"></div>
-                        </div>
-                        <div class="fire-bottom">
-                        <div class="main-fire"></div>
-                        </div>
-                    </div>   
                 </div>
-                
                 <div class="weekdays">
                     <div>sun</div>
                     <div>mon</div>
@@ -79,33 +55,32 @@
                     <div>sat</div>
                 </div>
                 <div class="days">
-                    
                 </div>
             </div>
         </div>
         <div class="right">
             <div class="to-do-list-overlay">
-                <div class = "to-do-page-container">
+                <div class="to-do-page-container">
                     <div class="to-do-header-container">
-                    <header class="to-do-header-title">To-do List</header>
-                    <button class="to-do-close-button">x</button>
+                        <header class="to-do-header-title">To-do List</header>
+                        <button class="to-do-close-button">x</button>
                     </div>
                     <div class="inputField">
                         <input type="text" placeholder="Add your new todo">
+                        <select title="select-course" class="to-do-course-button">Select Course
+                        </select> 
                         <button class="to-do-input-button"><i class="fas fa-plus"></i></button>
                     </div>
-                    <div class="todo-container">
-                        <ul class="todoList">
+                    <ul class="todoList">
 
-                        </ul>
-                    </div>
+                    </ul>
                     <div class="to-do-footer">
-                        <span >You have <span class="pendingTasks"></span> pending tasks </span>
+                        <span>You have <span class="pendingTasks"></span> pending tasks </span>
                         <button class="to-do-clear-button">Clear ALL</button>
                     </div>
                 </div>
             </div>
-            <div class = "event-page-container">
+            <div class="event-page-container">
                 <div class="today-date">
                     <div class="event-day"></div>
                     <div class="event-date"></div>
@@ -118,16 +93,16 @@
                     </div>
                     <div class="add-event-body">
                         <div class="add-event-input">
-                            <input 
-                                type="text" 
-                                placeholder="Event Name" 
-                                class="event-name" 
-                            />
+                            <input type="text" placeholder="Event Name" class="event-name" />
                         </div>
                         <div class="add-event-choice">
                             <button class="add-event-choice-button">Select Course</button>
                             <div class="add-event-choice-box">
                                 <div class="event-choice none" value="0">No Course</div>
+                                <div class="event-choice" value="29667">Computer Programming Section 5 (ECN)</div>
+                                <div class="event-choice" value="29362">Exploring Engineering World</div>
+                                <div class="event-choice" value="29880">Calculus I Section 1-8</div>
+                                <div class="event-choice" value="30880">General Physics I Section 1-6</div>
                             </div>
                         </div>
                     </div>
@@ -139,7 +114,8 @@
             </div>
         </div>
     </div>
-    
+
     <script src="FrontJs.js"></script>
 </body>
+
 </html>
