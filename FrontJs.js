@@ -71,9 +71,7 @@ console.log(eventsArr);
 const authorizeApplication = () => {
   window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
 };
-const logout = async () => {
-  window.location.href = `http://${backendIPAddress}/courseville/logout`;
-};
+
 //function to add days in days with class day and prev-date next-date on previous month and next month days and active on today
 function initCalendar() {
   const firstDay = new Date(year, month, 1);
@@ -886,8 +884,6 @@ function addAssignmentToCal(assignmentData, cv_cid){
     }
 }
 
-console.log("Hello world");
-
 function addChoices() {
   let choiceCV = '<div class="event-choice none" value="0">No Course</div>';
 
@@ -897,15 +893,10 @@ function addChoices() {
   })
 
   eventChoiceBox.innerHTML = choiceCV;
-  changeChoiceBtnText();
-
 }
 
 function changeChoiceBtnText() {
-  let choiceBtns = document.querySelectorAll(".add-event-choice-box");
-  //let choiceBtns = document.querySelectorAll(".event-choice");
-  console.log(choiceBtns);
-
+  let choiceBtns = document.querySelectorAll(".event-choice");
   choiceBtns.forEach((choiceBtn)=>{
     console.log(choiceBtn);
     choiceBtn.addEventListener("click", () => {
@@ -914,6 +905,7 @@ function changeChoiceBtnText() {
     });
   })
 }
+changeChoiceBtnText();
 
 // init data from mycoruseville (first call)
 getCourse();

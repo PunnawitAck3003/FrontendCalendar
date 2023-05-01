@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name = "viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel = "stylesheet" href = "FrontStyle2.css"/>
+    <link rel = "stylesheet" href = "FrontStyle.css"/>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
@@ -14,17 +14,9 @@
     <title>Calendar | myCourseVille</title>
 </head>
 <body>
-    <div class="top-right-button-container">
-        <div class="login-page-button"  onclick="window.location.href='FrontLogin.html'">Login Page</div>
-        <div class="log-out-button" onclick="logout()">Log out</div>
-    </div>
-    
     <div class="container">
         <div class="left">
             <div class="calendar">
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                  </div>
                 <div class="month-select-box">
                     <div class="month-selector">
                         <div class="list-months">
@@ -99,9 +91,11 @@
                         <input type="text" placeholder="Add your new todo">
                         <button class="to-do-input-button"><i class="fas fa-plus"></i></button>
                     </div>
-                    <ul class="todoList">
+                    <div class="todo-container">
+                        <ul class="todoList">
 
-                    </ul>
+                        </ul>
+                    </div>
                     <div class="to-do-footer">
                         <span >You have <span class="pendingTasks"></span> pending tasks </span>
                         <button class="to-do-clear-button">Clear ALL</button>
@@ -143,6 +137,6 @@
         </div>
     </div>
     
-    <script src="FrontJs2.js"></script>
+    <script src="FrontJs.js"></script>
 </body>
 </html>
