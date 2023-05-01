@@ -313,6 +313,7 @@ function dropover(event){
 
 function drop(event){
   event.preventDefault();
+  console.log(selectTask);
 
   const eventTitle = selectTask.innerText;
   

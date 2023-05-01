@@ -23,6 +23,9 @@ eventChoiceBox = document.querySelector(".add-event-choice-box");
 
 const listMonth = document.querySelectorAll(".list-month");
 
+let selectTask;
+let dragOverDay;
+
 let today = new Date();
 let activeDay;
 let month = today.getMonth();
@@ -293,6 +296,37 @@ function addListner() {
       }
     });
   });
+
+  days.forEach((day) => {
+    day.addEventListener("dragover", (e) =>{
+      e.preventDefault();
+      dragOverDay = day.innerHTML;
+      day.classList.add('dragover');
+    });
+    day.addEventListener("dragleave", (e) =>{
+      e.preventDefault();
+      day.classList.remove('dragover');
+    });
+    day.addEventListener("drop", (e) => {
+      day.classList.remove('dragover');
+      e.preventDefault();
+
+      const eventTitle = selectTask.innerText;
+      
+      const newEvent = {
+        title: eventTitle,
+        icon: ' ',
+        year: '2022',
+        semester: '2',
+      };
+
+      console.log(newEvent);
+
+      addItemToDB(newEvent, dragOverDay);
+      updateEvents(activeDay);
+      selectTask.children[1].onclick();
+    });
+  });
 }
 
 //function to open and close up to-do list overlay
@@ -373,12 +407,14 @@ function updateEvents(date) {
     ) {
       event.events.forEach((event) => {
         if(event.icon === null || event.icon == ' ') event.icon = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png"
-        
+
+        let subject = event.subject;
+        if(subject == null) subject = "To-do"
 
         events += `<div class="event">
             <div class="title">
               <img src=${event.icon} height="50" width="50"></img>
-              <div class="event-title">${event.title}</div>
+              <div class="event-title">(${subject}) ${event.title}</div>
             </div>
         </div>`;
       });
@@ -417,22 +453,25 @@ eventChoiceBtn.addEventListener("click", () =>{
 })
 
 function getParamsFromChoiceBtn(){
-  let subjCVId = eventChoiceBtn.value;
-  if (Number(subjCVId) === 0){
+  let subjCVId = eventChoiceBtn.innerHTML;
+  let cvid = nameToCvide.get(subjCVId);
+
+  let data = CvidToData.get(cvid);
+
+  if (data == null){
     return {
       icon: " ",
       year: currentAcademicYear,
       semester: currentSemester
     }
   }
-  console.log(Number(subjCVId));
-  let subjData = CvidToData.get(Number(subjCVId));
-  let arrangedData = {
-    icon: subjData.icon,
-    year: subjData.year,
-    semester: subjData.semester
-  }
-  return arrangedData;
+
+  return {
+    icon: data.course_icon,
+    year: data.year,
+    semester: data.semester,
+    subject: data.title
+  };
 }
 
 //allow 50 chars in eventtitle
@@ -444,14 +483,17 @@ addEventSubmit.addEventListener("click", () => {
   const eventTitle = addEventTitle.value;
 
   let paramsChoice = getParamsFromChoiceBtn();
+  console.log(paramsChoice);
   
   const newEvent = {
-    subject: eventChoiceBtn.innerHTML,
     title: eventTitle,
     icon: paramsChoice.icon,
     year: paramsChoice.year,
-    semester: paramsChoice.semester
+    semester: paramsChoice.semester,
+    subject: paramsChoice.subject
   };
+
+  console.log(newEvent);
 
   addItemToDB(newEvent);
   updateEvents(activeDay);
@@ -461,7 +503,7 @@ addEventSubmit.addEventListener("click", () => {
 eventsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("event")) {
     if (confirm("Are you sure you want to delete this event?")) {
-      const eventTitle = e.target.children[0].children[1].innerHTML;
+      let eventTitle = e.target.children[0].children[1].innerHTML;
       eventsArr.forEach((event) => {
         if (
           event.day === activeDay &&
@@ -469,12 +511,20 @@ eventsContainer.addEventListener("click", (e) => {
           event.year === year
         ) {
           event.events.forEach((item, index) => {
-            if(item.type == "Assignment"){
+            
+            let subject = item.subject;
+            if(subject == null) subject = "To-do"
+
+            const title = item.title
+
+            const subAndTitle = "("+subject+") "+title;
+            //console.log(subAndTitle, eventTitle);
+
+            if(subAndTitle === eventTitle && item.type == "Assignment"){
               alert("You can't delete assignment");
               return;
             }
-
-            if (item.title === eventTitle) {
+            if (subAndTitle === eventTitle) {
               console.log(item);
               event.events.splice(index, 1);
               deleteItem(item.id);
@@ -525,6 +575,7 @@ inputBox.onkeyup = ()=>{
 }
 showTasks(); //calling showTask function
 addBtn.onclick = ()=>{ //when user click on plus icon button
+  // console.log("test");
   let userEnteredValue = inputBox.value; //getting input field value
   let getLocalStorageData = localStorage.getItem("New Todo"); //getting localstorage
   if(getLocalStorageData == null){ //if localstorage has no data
@@ -570,11 +621,22 @@ function showTasks(){
   }
   let newLiTag = "";
   listArray.forEach((element, index) => {
-    newLiTag += `<li>${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
+    newLiTag += `<li> <img src="https://cdn-icons-png.flaticon.com/512/4552/4552718.png" height="25" width="25"></img> ${element}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
   });
+
   todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
   inputBox.value = ""; //once task added leave the input field blank
+
+  let taskElement = document.querySelector(".todoList").getElementsByTagName("li");
+  for(let i = 0; i < taskElement.length; ++i){
+    taskElement[i].addEventListener("dragstart", (e) =>{
+      selectTask = taskElement[i];
+    });
+  }
+
 }
+
+
 // delete task function
 function deleteTask(index){
   let getLocalStorageData = localStorage.getItem("New Todo");
@@ -630,10 +692,12 @@ const getItemsFromDB = async () => {
     .catch((error) => console.error(error));
 };
 
-const addItemToDB = async (data) => {
-
+const addItemToDB = async (data, date) => {
+  if(date == null) date = activeDay;
+  date = Number(date);
+  
   const itemToAdd = {
-              day: activeDay,
+              day: date,
               month: month,
               year: year,
               event : data
@@ -684,9 +748,10 @@ function addItemToCal(data){
   const newEvent = {
       title: event.title,
       id : data.id,
-      icon: ' ',
+      icon: event.icon,
       year: event.year,
-      semester: event.semester
+      semester: event.semester,
+      subject: event.subject
   };
 
   let eventAdded = false;
@@ -723,6 +788,7 @@ function addItemToCal(data){
 getItemsFromDB();
 
 let CvidToData = new Map();
+let nameToCvide = new Map();
 let allCvId = [];
 let progress = 0;
 let allprogress = 0;
@@ -780,6 +846,7 @@ const getCourseInfo = async (cv_cid) => {
       .then((data) => {
         console.log("found", cv_cid, data.data);
         CvidToData.set(cv_cid, data.data);
+        nameToCvide.set(data.data.title, cv_cid);
       })
       .catch((error) => console.error(error));
 };
@@ -822,16 +889,20 @@ const getAssignmentInfo = async (assignmentsData, cv_cid) => {
         addAssignmentToCal(data.data, cv_cid);
         progress++;
 
-        console.log(Math.round(progress/allprogress * 100) + "%");
-
-        if(progress === allprogress) addChoices();
+        const percent = Math.round(progress/allprogress * 100) + "%";
+        if(progress === allprogress) {
+            addChoices();
+            setTimeout(function(){
+                document.querySelector('.progress-bar').style.height = "0px";
+            }, 3000 );
+        }
+        document.querySelector('.progress').style.width = percent;
 
       })
       .catch((error) => console.error(error));
 };
 
 function addAssignmentToCal(assignmentData, cv_cid){
-  //console.log(assignmentData);
 
   // if title empty then do nothing
   if (assignmentData.title === "") {
@@ -886,8 +957,6 @@ function addAssignmentToCal(assignmentData, cv_cid){
     }
 }
 
-console.log("Hello world");
-
 function addChoices() {
   let choiceCV = '<div class="event-choice none" value="0">No Course</div>';
 
@@ -902,12 +971,9 @@ function addChoices() {
 }
 
 function changeChoiceBtnText() {
-  let choiceBtns = document.querySelectorAll(".add-event-choice-box");
-  //let choiceBtns = document.querySelectorAll(".event-choice");
-  console.log(choiceBtns);
+  let choiceBtns = document.querySelectorAll(".event-choice");
 
   choiceBtns.forEach((choiceBtn)=>{
-    console.log(choiceBtn);
     choiceBtn.addEventListener("click", () => {
       eventChoiceBtn.innerHTML = choiceBtn.innerHTML;
       eventChoiceBox.classList.remove("active");
