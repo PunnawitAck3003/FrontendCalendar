@@ -74,9 +74,7 @@ console.log(eventsArr);
 const authorizeApplication = () => {
   window.location.href = `http://${backendIPAddress}/courseville/auth_app`;
 };
-const logout = async () => {
-  window.location.href = `http://${backendIPAddress}/courseville/logout`;
-};
+
 //function to add days in days with class day and prev-date next-date on previous month and next month days and active on today
 function initCalendar() {
   const firstDay = new Date(year, month, 1);
@@ -966,8 +964,6 @@ function addChoices() {
   })
 
   eventChoiceBox.innerHTML = choiceCV;
-  changeChoiceBtnText();
-
 }
 
 function changeChoiceBtnText() {
@@ -980,6 +976,7 @@ function changeChoiceBtnText() {
     });
   })
 }
+changeChoiceBtnText();
 
 // init data from mycoruseville (first call)
 getCourse();

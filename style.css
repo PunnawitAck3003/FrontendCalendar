@@ -17,34 +17,6 @@ body {
     background-color: antiquewhite;
 }
 
-.top-right-button-container {
-    position: absolute;
-    top: 0;
-    right: 1%;
-    display: flex;
-}
-
-.top-right-button-container div {
-    margin-left: 1vw;
-}
-
-.log-out-button,
-.login-page-button {
-    padding: 0.5vw;
-    background-color: white;
-    color: black;
-    width: -moz-fit-content;
-    width: fit-content;
-    font-size: 1.6em;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    z-index: 999;
-    align-content: center;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
 .container {
     position: relative;
     width: 1200px;
@@ -400,11 +372,6 @@ add-event-footer {
         justify-content: flex-start;
     }
 
-    .log-out-button,
-    .login-page-button {
-        font-size: 1.2em;
-    }
-
     .container {
         min-height: 100vh;
         flex-direction: column;
@@ -433,32 +400,21 @@ add-event-footer {
 }
 
 @media screen and (max-width: 500px) {
-
     .calendar .month {
-        font-size: calc(0.6em + 2vw);
+      height: 75px;
     }
-
-    .log-out-button,
-    .login-page-button {
-        font-size: 0.9em;
-    }
-
     .calendar .weekdays {
-        height: 50px;
+      height: 50px;
     }
-
     .calendar .days .day {
-        height: 40px;
-        font-size: 0.8rem;
+      height: 40px;
+      font-size: 0.8rem;
     }
-
     .calendar .days .day.active,
     .calendar .days .day.today {
-        font-size: 1rem;
+      font-size: 1rem;
     }
-
     .right .today-date {
-        padding: 20px;
+      padding: 20px;
     }
   }
-
