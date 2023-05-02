@@ -448,7 +448,7 @@ function updateEvents(date) {
                 events += `<div class="event">
             <div class="title">
               <img src=${event.icon} height="50" width="50"></img>
-              <div class="event-title">(${subject}) ${event.title}</div>
+              <div class="event-title" value=$()>(${subject}) ${event.title}</div>
             </div>
         </div>`;
             });
@@ -509,10 +509,8 @@ eventChoiceBtn.addEventListener("click", () => {
 })
 
 function getParamsFromChoiceBtn() {
-    let subjCVId = eventChoiceBtn.innerHTML;
-    let cvid = nameToCvide.get(subjCVId);
-
-    let data = CvidToData.get(cvid);
+    let subjCVId = eventChoiceBtn.value;
+    let data = CvidToData.get(Number(subjCVId));
 
     if (data == null) {
         return {
@@ -559,7 +557,7 @@ addEventSubmit.addEventListener("click", () => {
 eventsContainer.addEventListener("click", (e) => {
     if (e.target.classList.contains("event")) {
         if (confirm("Are you sure you want to delete this event?")) {
-            let eventTitle = e.target.children[0].children[1].innerHTML;
+            let eventTitle = e.target.children[0].children[1].textContent;
             eventsArr.forEach((event) => {
                 if (
                     event.day === activeDay &&
@@ -569,6 +567,7 @@ eventsContainer.addEventListener("click", (e) => {
                     event.events.forEach((item, index) => {
 
                         let subject = item.subject;
+                        console.log(subject);
                         if (subject == null) subject = "To-do"
 
                         const title = item.title
@@ -580,10 +579,13 @@ eventsContainer.addEventListener("click", (e) => {
                             alert("You can't delete assignment");
                             return;
                         }
+                        console.log(eventTitle);
+                        console.log(subAndTitle);
                         if (subAndTitle === eventTitle) {
                             console.log(item);
                             event.events.splice(index, 1);
                             deleteItem(item.id);
+                            return;
                         }
                     });
                     //if no events left in a day then remove that day from eventsArr
@@ -1076,6 +1078,7 @@ function changeChoiceBtnText() {
     choiceBtns.forEach((choiceBtn) => {
         choiceBtn.addEventListener("click", () => {
             eventChoiceBtn.innerHTML = choiceBtn.innerHTML;
+            eventChoiceBtn.value = choiceBtn.getAttribute("value");
             eventChoiceBox.classList.remove("active");
         });
     })
