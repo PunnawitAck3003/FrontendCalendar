@@ -1,4 +1,4 @@
-const backendIPAddress = "3.222.110.126:3000";
+const backendIPAddress = "127.0.0.1:3000";
 
 const calendar = document.querySelector(".calendar"),
     logoutBtn = document.querySelector(".log-out-button"),
@@ -595,6 +595,9 @@ eventsContainer.addEventListener("click", (e) => {
                         if (activeDayEl.classList.contains("event")) {
                             activeDayEl.classList.remove("event");
                         }
+                        if (activeDayEl.classList.contains("marker")) {
+                            activeDayEl.classList.remove("marker");
+                        }
                     }
                 }
             });
@@ -923,7 +926,8 @@ const getCourseInfo = async (cv_cid) => {
             CvidToData.set(cv_cid, data.data);
             nameToCvide.set(data.data.title, cv_cid);
 
-            console.log(progressCourse, allProgressCourse);
+            //console.log(progressCourse, allProgressCourse);
+            const percent = Math.round(progressCourse / allProgressCourse * 100) + "%";
             if(progressCourse == allProgressCourse){
                for (let i = 0; i < allCvId.length; ++i) {
                 getAllAssignment(allCvId[i]);
@@ -931,6 +935,7 @@ const getCourseInfo = async (cv_cid) => {
                showTasks(); //calling showTask function
                addChoices();
             }
+            document.querySelector('.progress').style.width = percent;
             
         })
         .catch((error) => console.error(error));
@@ -1091,4 +1096,3 @@ function displayFire(currentMonth) {
 const currentYear = new Date().getFullYear();
 const yearInput = document.querySelector('.year-input');
 yearInput.value = currentYear;
-//V.1
