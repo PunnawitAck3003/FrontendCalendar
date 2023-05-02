@@ -393,7 +393,7 @@ body {
 
 /* add tick in event after */
 .events .event::after {
-    content: "✓";
+    content: "X";
     position: absolute;
     top: 50%;
     right: 0;
@@ -1138,6 +1138,10 @@ body {
 @media screen and (max-width: 500px) {
     .calendar .month {
         font-size: calc(0.6em + 2vw);
+    }
+    
+    .events .event .title .event-title {
+        font-size: calc(0.75em + 1%);
     }
 
     .log-out-button,
