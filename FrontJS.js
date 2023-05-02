@@ -201,6 +201,7 @@ function changeMonthCalendar() {
     daysContainer.innerHTML = days;
 
     addListner();
+    updateMarker();
     displayFire(month);
 
 }
