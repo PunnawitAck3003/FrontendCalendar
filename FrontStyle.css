@@ -182,23 +182,6 @@ body {
     margin-bottom: 0.5vw;
 }
 
-.calendar .days div {
-    margin-left: 3%;
-    margin-right: 3%;
-    margin-top: 1%;
-    margin-bottom: 1%;
-    font-size: calc(1.17em + 10%);
-    flex-wrap: wrap;
-    width: 7%;
-    aspect-ratio: 1/1;
-    border-radius: 50%;
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    text-align: center;
-    object-fit: cover;
-}
-
 .calendar .days .day {
     position: relative;
     color: #f7c340ea;
@@ -207,7 +190,7 @@ body {
     margin-right: 3%;
     margin-top: 1%;
     margin-bottom: 1%;
-    font-size: calc(1.25em + 15%);
+    font-size: calc(1.17em + 10%);
     flex-wrap: wrap;
     width: 7%;
     aspect-ratio: 1/1;
@@ -237,8 +220,7 @@ body {
 }
 
 .calendar .days .today.active {
-    border: 2px solid #ffe600;
-    color: #ffe600;
+    color: #f1f1f1;
     background: rgb(218, 81, 81);
 }
 
@@ -340,7 +322,7 @@ body {
 .events {
     width: 100%;
     height: 100%;
-    max-height: 45vh;
+    max-height: 65vh;
     overflow-x: hidden;
     overflow-y: auto;
     display: flex;
@@ -357,7 +339,7 @@ body {
     flex-direction: column;
     gap: 5px;
     padding: 0 20px;
-    padding-left: 50px;
+    padding-left: 20px;
     color: #fff;
     background: linear-gradient(80deg, #4965d5, transparent);
     cursor: pointer;
@@ -1105,8 +1087,8 @@ body {
         font-size: calc(1.3em + 1vw);
     }
 
-    .calendar .days div {
-        font-size: 1.2em;
+    .calendar .days .day {
+        font-size: 1.1em;
     }
 }
 
@@ -1164,7 +1146,7 @@ body {
         margin-top: 20px;
     }
 
-    .calendar .days div {
+    .calendar .days .day {
         font-size: calc(0.55em + 10%);
     }
 
