@@ -440,8 +440,8 @@ function updateEvents(date) {
             year === event.year
         ) {
             event.events.forEach((event) => {
-                if (event.icon === null || event.icon == ' ') event.icon = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png"
-
+                if (event.icon === null || event.icon == ' '|| event.icon == '') event.icon = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png"
+                //console.log(event.icon+"1");
                 let subject = event.subject;
                 if (subject == null) subject = "To-do"
 
@@ -691,11 +691,12 @@ function showTasks() {
     listArray.forEach((element, index) => {
         const data = CvidToData.get(Number(element[1]));
         console.log(data, listArray);
-
+        
         let img, subject;
+        
         if(data == null || data.course_icon == null) img = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png";
         else img = data.course_icon;
-
+        console.log(img);
         if(data == null || data.title == null) subject = "To-do";
         else subject = data.title;
 
