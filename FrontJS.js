@@ -1,4 +1,4 @@
-const backendIPAddress = "127.0.0.1:3000";
+const backendIPAddress = "3.222.110.126:3000";
 
 const calendar = document.querySelector(".calendar"),
     logoutBtn = document.querySelector(".log-out-button"),
