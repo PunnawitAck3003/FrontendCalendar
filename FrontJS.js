@@ -1,4 +1,4 @@
-const backendIPAddress = "127.0.0.1:3000";
+const backendIPAddress = "3.222.110.126:3000";
 
 const calendar = document.querySelector(".calendar"),
     logoutBtn = document.querySelector(".log-out-button"),
@@ -1091,4 +1091,4 @@ function displayFire(currentMonth) {
 const currentYear = new Date().getFullYear();
 const yearInput = document.querySelector('.year-input');
 yearInput.value = currentYear;
-// V.1
+//V.1
