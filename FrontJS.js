@@ -1,4 +1,4 @@
-const backendIPAddress = "3.222.110.126:3000";
+const backendIPAddress = "127.0.0.1:3000";
 
 const calendar = document.querySelector(".calendar"),
     logoutBtn = document.querySelector(".log-out-button"),
@@ -33,6 +33,14 @@ let month = today.getMonth();
 let year = today.getFullYear();
 let currentSemester;
 let currentAcademicYear;
+
+let CvidToData = new Map();
+let nameToCvide = new Map();
+let allCvId = [];
+let progress = 0;
+let allprogress = 0;
+let progressCourse = 0;
+let allProgressCourse = 0;
 
 function getCurrAcademicYear() {
     if (month >= 7 && month <= 11) {
@@ -1083,3 +1091,4 @@ function displayFire(currentMonth) {
 const currentYear = new Date().getFullYear();
 const yearInput = document.querySelector('.year-input');
 yearInput.value = currentYear;
+// V.1
