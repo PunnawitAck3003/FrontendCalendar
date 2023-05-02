@@ -899,8 +899,14 @@ const getCourse = async () => {
             allProgressCourse = data.length;
             // add course info to CvidTodata
             for (let i = 0; i < data.length; ++i) {
-                getCourseInfo(data[i].cv_cid);
-                allCvId.push(data[i].cv_cid);
+                if (Number(data[i].year) === currentAcademicYear && Number(data[i].semester) === currentSemester )
+                {
+                    getCourseInfo(data[i].cv_cid);
+                    allCvId.push(data[i].cv_cid);
+                }
+                else{
+                    progressCourse++;
+                }
             }
 
             setTimeout(function () {
@@ -926,6 +932,7 @@ const getCourseInfo = async (cv_cid) => {
         .then((data) => {
             console.log("found", cv_cid, data.data);
             progressCourse++;
+            
             CvidToData.set(cv_cid, data.data);
             nameToCvide.set(data.data.title, cv_cid);
 
@@ -957,6 +964,7 @@ const getAllAssignment = async (cv_cid) => {
         .then((response) => response.json())
         .then((data) => {
             Alldata = data.data;
+            console.log(Alldata);
             allprogress += Alldata.length;
 
             for (let i = 0; i < Alldata.length; ++i) {
