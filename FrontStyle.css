@@ -232,6 +232,10 @@ body {
     animation: pulse 2s infinite;
 }
 
+.calendar .days .day.marker.active {
+    background: rgb(44, 119, 209);
+}
+
 .calendar .days div:hover,
 .calendar .days .day.marker div:hover
  {
