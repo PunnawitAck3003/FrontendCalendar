@@ -144,6 +144,7 @@ function initCalendar() {
     daysContainer.innerHTML = days;
     addListner();
     displayFire(month);
+    updateMarker();
 
 }
 
