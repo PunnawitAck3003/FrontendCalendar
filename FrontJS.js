@@ -41,6 +41,7 @@ let progress = 0;
 let allprogress = 0;
 let progressCourse = 0;
 let allProgressCourse = 0;
+let userID;
 
 function getCurrAcademicYear() {
     if (month >= 7 && month <= 11) {
@@ -352,8 +353,6 @@ function addListner() {
                     semester: '2',
                 };
             }
-
-            
 
             console.log(newEvent);
 
@@ -760,7 +759,7 @@ const getItemsFromDB = async () => {
         .then((data) => {
             itemsData = data;
             for (let i = 0; i < itemsData.length; ++i) {
-                if (checkExited(itemsData[i].id)) continue;
+                if (checkExited(itemsData[i].id) || itemsData[i].userID != userID) continue;
 
                 addItemToCal(itemsData[i]);
                 addDBID(itemsData[i].id);
@@ -777,6 +776,7 @@ const addItemToDB = async (data, date) => {
         day: date,
         month: month,
         year: year,
+        userID: userID,
         event: data
     }
 
@@ -862,8 +862,6 @@ function addItemToCal(data) {
     }
 }
 
-getItemsFromDB();
-
 const getUserProfile = async () => {
     const options = {
         method: "GET",
@@ -875,10 +873,13 @@ const getUserProfile = async () => {
     )
         .then((response) => response.json())
         .then((data) => {
-            console.log(data);
+            userID = data.data.student.id;
+            getItemsFromDB();
         })
         .catch((error) => console.error(error));
 };
+
+getUserProfile();
 
 const getCourse = async () => {
     const options = {
