@@ -210,6 +210,7 @@ function prevMonth() {
     }
     changeMonthCalendar();
     checkForActive();
+    updateMarker();
 }
 function nextMonth() {
     month++;
@@ -219,6 +220,7 @@ function nextMonth() {
     }
     changeMonthCalendar();
     checkForActive();
+    updateMarker();
 }
 
 initCalendar();
@@ -241,6 +243,7 @@ function checkForActive() {
         })
     }
 }
+
 
 //function to add active on day
 function addListner() {
@@ -293,7 +296,7 @@ function addListner() {
                 getActiveDay(e.target.innerHTML);
                 updateEvents(Number(e.target.innerHTML));
                 activeDay = Number(e.target.innerHTML);
-                e.target.classList.add("active");
+                day.classList.add("active");
             }
         });
     });
@@ -312,14 +315,37 @@ function addListner() {
             day.classList.remove('dragover');
             e.preventDefault();
 
-            const eventTitle = selectTask.innerText;
+            if(day.classList.contains("next-date") || day.classList.contains("next-date")){
+                alert("Please drop on a valid date");
+                return;
+            }
 
-            const newEvent = {
-                title: eventTitle,
-                icon: ' ',
-                year: '2022',
-                semester: '2',
-            };
+            const eventTitle = selectTask.getAttribute("text");
+            const cvid = selectTask.value;
+            console.log(eventTitle, cvid, selectTask);
+
+            data = CvidToData.get(cvid);
+            let newEvent;
+
+            if(data == null){
+                newEvent = {
+                    subject: "To-do",
+                    title: eventTitle,
+                    icon: "",
+                    year: '2022',
+                    semester: '2',
+                };
+            }else{
+                newEvent = {
+                    subject: data.title,
+                    title: eventTitle,
+                    icon: data.course_icon,
+                    year: '2022',
+                    semester: '2',
+                };
+            }
+
+            
 
             console.log(newEvent);
 
@@ -430,7 +456,29 @@ function updateEvents(date) {
         eventsContainer.style.overflowY = "auto";
     }
     eventsContainer.innerHTML = events;
+    updateMarker();
     //saveEvents();
+}
+
+function updateMarker(){
+    const days = document.querySelectorAll(".day");
+    days.forEach((day) => {
+        let event = false;
+        eventsArr.forEach((eventObj) => {
+            if (
+                eventObj.day === Number(day.innerHTML) &&
+                eventObj.month === month + 1 &&
+                eventObj.year === year
+            ) {
+                event = true;
+            }
+        });
+
+        if(event && !(day.classList.contains("prev-date") || day.classList.contains("next-date"))){
+            day.classList.add("marker");
+            //day.innerHTML = day.innerHTML + "<span class=\"event-marker\"></span>";
+        }
+    });
 }
 
 //function to add event
@@ -577,10 +625,13 @@ inputBox.onkeyup = () => {
         todoCourseBtn.classList.remove("active"); //unactive the course button
     }
 }
-showTasks(); //calling showTask function
+//showTasks(); //calling showTask function
 addBtn.onclick = () => { //when user click on plus icon button
     // console.log("test");
-    let userEnteredValue = [inputBox.value, Number(todoCourseBtn.value)]; //getting input field value
+    const index = todoCourseBtn.selectedIndex;
+    const selectCourse = todoCourseBtn.children[index];
+
+    let userEnteredValue = [inputBox.value, selectCourse.value]; //getting input field value
     let getLocalStorageData = localStorage.getItem("New Todo"); //getting localstorage
     if (getLocalStorageData == null) { //if localstorage has no data
         listArray = []; //create a blank array
@@ -626,7 +677,17 @@ function showTasks() {
     }
     let newLiTag = "";
     listArray.forEach((element, index) => {
-        newLiTag += `<li value="${element[1]}"> <img src="https://cdn-icons-png.flaticon.com/512/4552/4552718.png" height="25" width="25"></img> ${element[0]}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
+        const data = CvidToData.get(Number(element[1]));
+        console.log(data, listArray);
+
+        let img, subject;
+        if(data == null || data.course_icon == null) img = "https://cdn-icons-png.flaticon.com/512/4552/4552718.png";
+        else img = data.course_icon;
+
+        if(data == null || data.title == null) subject = "To-do";
+        else subject = data.title;
+
+        newLiTag += `<li value=${element[1]} text=${element[0]}> <img src=${img} height="25" width="25"></img>(${subject}) ${element[0]}<span class="icon" onclick="deleteTask(${index})"><i class="fas fa-trash"></i></span></li>`;
     });
 
     todoList.innerHTML = newLiTag; //adding new li tag inside ul tag
@@ -792,12 +853,6 @@ function addItemToCal(data) {
 
 getItemsFromDB();
 
-let CvidToData = new Map();
-let nameToCvide = new Map();
-let allCvId = [];
-let progress = 0;
-let allprogress = 0;
-
 const getUserProfile = async () => {
     const options = {
         method: "GET",
@@ -827,15 +882,21 @@ const getCourse = async () => {
         .then((data) => {
             data = data.data.student;
 
+            allProgressCourse = data.length;
             // add course info to CvidTodata
             for (let i = 0; i < data.length; ++i) {
                 getCourseInfo(data[i].cv_cid);
                 allCvId.push(data[i].cv_cid);
             }
 
-            for (let i = 0; i < allCvId.length; ++i) {
-                getAllAssignment(allCvId[i]);
-            }
+            setTimeout(function () {
+                if(progress != allprogress){
+                    let overlayElement = document.querySelector(".overlay");
+                    overlayElement.remove();
+                    alert("Can not pull all data");
+                    document.querySelector('.progress-bar').style.height = "0px";
+                }
+            }, 300000);
 
         })
         .catch((error) => console.error(error));
@@ -850,8 +911,19 @@ const getCourseInfo = async (cv_cid) => {
         .then((response) => response.json())
         .then((data) => {
             console.log("found", cv_cid, data.data);
+            progressCourse++;
             CvidToData.set(cv_cid, data.data);
             nameToCvide.set(data.data.title, cv_cid);
+
+            console.log(progressCourse, allProgressCourse);
+            if(progressCourse == allProgressCourse){
+               for (let i = 0; i < allCvId.length; ++i) {
+                getAllAssignment(allCvId[i]);
+               } 
+               showTasks(); //calling showTask function
+               addChoices();
+            }
+            
         })
         .catch((error) => console.error(error));
 };
@@ -895,11 +967,12 @@ const getAssignmentInfo = async (assignmentsData, cv_cid) => {
             progress++;
 
             const percent = Math.round(progress / allprogress * 100) + "%";
-            if (progress === allprogress) {
-                addChoices();
+            console.log(progress, allprogress);
+            if (progress == allprogress) {
                 setTimeout(function () {
-                    document.querySelector('.progress-bar').style.height = "0px";
-                }, 3000);
+                    let overlayElement = document.querySelector(".overlay");
+                    overlayElement.remove();
+                }, 1000);
             }
             document.querySelector('.progress').style.width = percent;
 
@@ -915,6 +988,7 @@ function addAssignmentToCal(assignmentData, cv_cid) {
     }
 
     const cvidData = CvidToData.get(cv_cid);
+
     //data about assignment
     const newEvent = {
         subject: cvidData.title,
@@ -963,13 +1037,17 @@ function addAssignmentToCal(assignmentData, cv_cid) {
 }
 
 function addChoices() {
+
     let choiceCV = '<div class="event-choice none" value="0">No Course</div>';
-    let choiceToDo = `<option class="to-do-choice none" value="0">No Course</option>`
+    let choiceToDo = `<option class="to-do-choice none" value="0">No Course</option>`;
 
     allCvId.forEach((CvID) => {
         let cv_cid_Data = CvidToData.get(CvID);
-        choiceCV += `<div class="event-choice" value=${CvID}">${cv_cid_Data.title}</div>`;
-        choiceToDo += `<option class="to-do-choice" value=${CvID}">${cv_cid_Data.title}</option>`
+        if(cv_cid_Data != null){
+           choiceCV += `<div class="event-choice" value=${CvID}>${cv_cid_Data.title}</div>`;
+            choiceToDo += `<option class="to-do-choice" value=${CvID}>${cv_cid_Data.title}</option>`; 
+        }
+        
     })
 
     eventChoiceBox.innerHTML = choiceCV;
